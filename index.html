@@ -3,6 +3,18 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Hello World!</title>
+	<link rel="stylesheet" type="text/css" href="./bootstrap/css/bootstrap.min.css">
+
+</head>
+<body>
+	<div class="input-group">
+		<input type="text" class="form-control" placeholder="输入待办项然后回车">
+		<span class="input-group-btn">
+		<button class="btn btn-primary" type="button">新建</button>
+		</span>
+	</div>
+</body>
+<footer>
 	<!-- Insert this line above script imports  -->
 	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
@@ -12,11 +24,5 @@
 
 	<!-- Insert this line after script imports -->
 	<script>if (window.module) module = window.module;</script>
-</head>
-<body>
-	<h1>Hello World!</h1>
-	We are using node <script>document.write(process.versions.node)</script>,
-	Chrome <script>document.write(process.versions.chrome)</script>,
-	and Electron <script>document.write(process.versions.electron)</script>.
-</body>
+</footer>
 </html>
