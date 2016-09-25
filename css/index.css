@@ -2,6 +2,6 @@
 }
 .todoItemBtnGroup{
     position: absolute;
-    top: 0;
+    bottom: 4px;
     right: 0;
 }

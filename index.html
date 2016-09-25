@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <title>Hello World!</title>
     <link rel="stylesheet" type="text/css" href="./bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="./base.css">
-    <link rel="stylesheet" type="text/css" href="./main.css">
+    <link rel="stylesheet" type="text/css" href="css/base.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
 </head>
 <body>
 <div class="input-group">
     <input type="text" class="form-control newTodoInput" placeholder="输入待办项并回车">
-		<span class="input-group-btn">
+    <span class="input-group-btn">
 		<button class="btn btn-primary newTodoBtn glyphicon glyphicon-plus" type="button"></button>
 		</span>
 </div>
@@ -24,8 +24,6 @@
         <button type="button" class="btn btn-default">Right</button>
     </div>
 </div>
-
-<sctipt type="text/template" class="todoItemTemp"></sctipt>
 </body>
 <footer>
     <!-- Insert this line above script imports  -->
@@ -36,7 +34,11 @@
 
     <!-- normal script imports etc  -->
     <script type="text/javascript" src="jquery-3.1.0.min.js"></script>
+    <script type="text/javascript" src="common.js"></script>
     <script type="text/javascript" src="index.js"></script>
+    <script type="text/javascript" src="db.js"></script>
+    <script type="text/javascript" src="render.js"></script>
+    <script type="text/javascript" src="listener.js"></script>
 
     <!-- Insert this line after script imports -->
     <script>if (window.module) module = window.module;</script>
