@@ -8,13 +8,19 @@
     let Common = require('./common.js').BaseCommon;
 
     let Temp = {
-        todoItem(data, itemCss = ""){
+        todoItem(data = {}, itemCss = ""){
+            if ($.isEmptyObject(data)) {
+                return "";
+            }
+            let btnGroup;
             switch (data.status) {
                 case Conf.todoStatusMap[0]:
                     itemCss += " list-group-item-info";
+                    btnGroup = [0, 1, 2];
                     break;
                 case Conf.todoStatusMap[1]:
                     itemCss += " list-group-item-success";
+                    btnGroup = [0, 1, 3];
                     break;
                 case Conf.todoStatusMap[2]:
                     itemCss += " list-group-item-warning";
@@ -24,9 +30,11 @@
                     break;
             }
             return [
-                '<a href="#" class="list-group-item todoItem ' + itemCss + '">',
+                '<a href="#" class="list-group-item todoItem ' + itemCss + '" ',
+                ' data-id="' + data.id + '"',
+                ' data-cont=' + data.cont + '>',
                 data.cont,
-                Temp.todoItemBtnGroup([0, 1, 2]),
+                btnGroup && Temp.todoItemBtnGroup(btnGroup),
                 '</a>'
             ].join('')
         },
@@ -38,19 +46,23 @@
             ].join('');
         },
         todoItemBtnGroup(btnIndexes){
-            let btnTempMap = {
-                modify: Temp.iconBtn('pencil'),
-                delete: Temp.iconBtn('trash'),
-                finish: Temp.iconBtn('ok'),
-                unfinish: Temp.iconBtn('remove'),
-            };
-            let tempMapKeys = Object.keys(btnTempMap);
+            let tempMapKeys = Object.keys(Render.btnTempMap);
             return [
                 '<div class="btn-group todoItemBtnGroup" style="display:none;">',
                 $.map(btnIndexes, (item, key)=> {
-                    return btnTempMap[tempMapKeys[item]];
+                    return Render.btnTempMap[tempMapKeys[item]];
                 }).join(''),
                 '</div>',
+            ].join('');
+        },
+        todoItemInput(text){
+            return [
+                '<div class="input-group">',
+                '<input type="text" class="form-control todoItemInput" placeholder="输入待办项并回车" value="' + (text || "") + '">',
+                '<span class="input-group-btn">',
+                Render.btnTempMap['save'],
+                '</span>',
+                '</div>'
             ].join('');
         },
     };
@@ -61,8 +73,25 @@
                 Render.aNewTodoItem(data);
             });
         },
-        aNewTodoItem(data){
-            Common.$todolistContainer.prepend(Temp.todoItem(data));
+        allTodoDataFromStore(){
+            Db.getAllData((e)=> {
+                Common.todolistData = e.target.result;
+                Render.allTodoItems(Common.todolistData);
+                BaseFn.initCommonDom(Conf.filter, Common);
+            });
+        },
+        aNewTodoItem(data, $container = Common.$todolistContainer){
+            $container.prepend(Temp.todoItem(data));
+        },
+        updateTodoItem($item, data){
+            $item.replaceWith(Temp.todoItem(data));
+        },
+        btnTempMap: {
+            modify: Temp.iconBtn('pencil modify'),
+            delete: Temp.iconBtn('trash delete'),
+            finish: Temp.iconBtn('ok finish'),
+            unfinish: Temp.iconBtn('remove unfinish'),
+            save: Temp.iconBtn('saved itemModifyDone'),
         }
     };
 

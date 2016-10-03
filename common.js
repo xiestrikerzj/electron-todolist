@@ -4,7 +4,7 @@
 
 (()=> {
     let BaseFn = {
-        initCommonDom: function (filters, obj) {
+        initCommonDom: function (filters = BaseConf.filter, obj) {
             $.map(filters, function (item, key) {
                 obj['$' + key] = $(item);
             });
@@ -20,8 +20,7 @@
         mainStoreName: 'todolistStore',
         newTodoItemForm(){
             return {
-                id: 4
-                , timeStamp: BaseCommon.date.getTime()
+                timeStamp: BaseCommon.date.getTime()
                 , status: BaseConf.todoStatusMap[0]
             }
         },
@@ -30,9 +29,20 @@
             , mainContainer: ''
             , newTodoBtn: '.newTodoBtn'
             , newTodoInput: '.newTodoInput'
+            , todolistContainer: '.todolistContainer'
             , todoItem: '.todoItem'
             , todoItemBtnGroup: '.todoItemBtnGroup'
-            , todolistContainer: '.todolistContainer'
+            , finishItemBtn: '.btn.finish'
+            , deleteItemBtn: '.btn.delete'
+            , removeItemBtn: '.btn.remove'
+            , unfinishItemBtn: '.btn.unfinish'
+            , modifyItemBtn: '.btn.modify'
+            , todoItemInput: '.todoItemInput'
+            , itemModifyDoneBtn: '.btn.itemModifyDone'
+            , filterBtn: '.btn.filter'
+            , filterAllBtn: '.btn.filter-all'
+            , filterUnfinishedBtn: '.btn.filter-unfinished'
+            , filterFinishedBtn: '.btn.filter-finished'
         },
         todoStatusMap: ['unfinished', 'finished', 'delay', 'abort'],
     };
