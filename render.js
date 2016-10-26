@@ -14,28 +14,28 @@
             }
             let btnGroup;
             switch (data.status) {
-                case Conf.todoStatusMap[0]:
+                case Conf.todoStatusMap[0]: // unfinished
                     itemCss += " list-group-item-info";
-                    btnGroup = [0, 1, 2];
+                    btnGroup = [5, 0, 1, 2]; // 修改 删除 完成 旗子
                     break;
-                case Conf.todoStatusMap[1]:
+                case Conf.todoStatusMap[1]: // finished
                     itemCss += " list-group-item-success";
-                    btnGroup = [0, 1, 3];
+                    btnGroup = [5, 0, 1, 3]; // 修改 删除 未完成 旗子
                     break;
-                case Conf.todoStatusMap[2]:
+                case Conf.todoStatusMap[2]: // abort
                     itemCss += " list-group-item-warning";
                     break;
-                case Conf.todoStatusMap[3]:
+                case Conf.todoStatusMap[3]: // delay
                     itemCss += " list-group-item-danger";
                     break;
             }
             return [
-                '<a href="#" class="list-group-item todoItem ' + itemCss + '" ',
+                '<div class="list-group-item todoItem ' + itemCss + '" ',
                 ' data-id="' + data.id + '"',
-                ' data-cont=' + data.cont + '>',
+                ' data-cont="' + data.cont + '">',
                 data.cont,
                 btnGroup && Temp.todoItemBtnGroup(btnGroup),
-                '</a>'
+                '</div>'
             ].join('')
         },
         iconBtn(className){
@@ -45,6 +45,8 @@
                 '"></button>',
             ].join('');
         },
+
+        // 参数是一个整形数组，包含每个按钮的索引
         todoItemBtnGroup(btnIndexes){
             let tempMapKeys = Object.keys(Render.btnTempMap);
             return [
@@ -87,11 +89,12 @@
             $item.replaceWith(Temp.todoItem(data));
         },
         btnTempMap: {
-            modify: Temp.iconBtn('pencil modify'),
-            delete: Temp.iconBtn('trash delete'),
-            finish: Temp.iconBtn('ok finish'),
-            unfinish: Temp.iconBtn('remove unfinish'),
-            save: Temp.iconBtn('saved itemModifyDone'),
+            modify: Temp.iconBtn('pencil modify'), // 0
+            delete: Temp.iconBtn('trash delete'), // 1
+            finish: Temp.iconBtn('ok finish'), // 2
+            unfinish: Temp.iconBtn('remove unfinish'), // 3
+            save: Temp.iconBtn('saved itemModifyDone'), // 4
+            flag: Temp.iconBtn('flag flag'), // 5
         }
     };
 

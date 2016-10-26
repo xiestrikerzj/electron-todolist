@@ -60,7 +60,7 @@
                         let it = Fn.getTodoItemWithEvent(e);
                         it.$thisItem.html(Temp.todoItemInput(it.itemText));
                         let $thisInput = it.$thisItem.find(Filter.todoItemInput);
-                        $thisInput.focus().val($thisInput.val());
+                        $thisInput.focus().val($thisInput.val()); // 把光标移到代编辑内容尾部
                     },
                     [Filter.itemModifyDoneBtn](e){
                         let it = Fn.getTodoItemWithEvent(e);
@@ -115,6 +115,9 @@
                                 // $(e.target).find(Filter.todoItemBtnGroup).hide();
                                 break;
                         }
+                    },
+                    [Filter.flagBtn](e){
+                        
                     }
                 },
                 "keypress": {
@@ -131,7 +134,7 @@
                     [Filter.todoItemInput](e){
                         let it = Fn.getTodoItemWithEvent(e);
                         switch (e.keyCode) {
-                            case 13:
+                            case 13: // enter
                                 it.$thisItem.find(Filter.itemModifyDoneBtn).click();
                                 break;
                             case 27: // esc
@@ -143,9 +146,11 @@
                     },
                 },
                 "blur": {
+
+                    // 当修改代办项的输入框失去焦点时，默认用修改后的内容替换原内容，并隐藏编辑框
                     [Filter.todoItemInput](e){
-                        let it = Fn.getTodoItemWithEvent(e);
-                        it.$thisItem.find(Filter.itemModifyDoneBtn).click();
+                        //let it = Fn.getTodoItemWithEvent(e);
+                        //it.$thisItem.find(Filter.itemModifyDoneBtn).click();
                     }
                 }
             }
