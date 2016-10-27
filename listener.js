@@ -14,20 +14,28 @@
     let Fn = {
         startListener(listenerMap){
             $.each(listenerMap, (event, filters)=> {
-                $.each(filters, (filter, callbacks)=> {
-                    params = [].concat(event, filter, callbacks);
+                $.each(filters, (filter, handler)=> {
+                    params = [].concat(event, filter, handler);
                     Common.$body.on.apply(Common.$body, params);
                 })
             });
         },
 
+        startWinListener(listenerMap = Fn.winListenerMap()){
+            $.each(listenerMap, (event, handler)=> {
+                $(window).on(event, handler);
+            })
+        },
+
+        // 监听事件映射方法，返回一个对象用于映射事件名、元素筛选器和处理函数，
+        // 该对象包含的所有映射关系将在startListener方法中被统一注册成标准的jq事件监听
         listenerMap() {
             return {
-                "click": {
-                    [Filter.newTodoBtn](){
+                "click": { // 事件名，下同
+                    [Filter.newTodoBtn](){ // 元素筛选器和处理函数，下同
                         let newTodoCont = Common.$newTodoInput.val();
                         if (newTodoCont !== "") {
-                            let targData = {cont: newTodoCont};
+                            let targData = $.extend(true, {}, Conf.newTodoItemForm(), {cont: newTodoCont});
                             Db.addDatas(targData, (e)=> {
                                 let dataInd = e.target.result;
                                 Db.getDataByKey(dataInd, (data)=> {
@@ -39,9 +47,9 @@
                         }
                     },
                     [Filter.todoItem](e){
-                        let $this = $(e.target);
-                        $this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
-                        $this.find(Filter.todoItemBtnGroup).toggleClass('show');
+                        //let $this = $(e.target);
+                        //$this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
+                        //$this.find(Filter.todoItemBtnGroup).toggleClass('show');
                     },
                     [Filter.todoItemBtnGroup](e){
                         e.stopPropagation();
@@ -94,6 +102,9 @@
                             status: "unfinished"
                         })
                     },
+                    [Filter.tagsBtn](e){
+
+                    }
                 },
                 "dblclick": {
                     [Filter.todoItemBtnGroup](e){
@@ -106,19 +117,17 @@
                 },
                 "mouseenter mouseleave": {
                     [Filter.todoItem] (e){
+                        let $this = $(this);
                         switch (e.type) {
                             case "mouseenter":
-                                // $(e.target).find(Filter.todoItemBtnGroup).show();
+                                $this.find(Filter.todoItemBtnGroup).addClass('show').show();
+                                $this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
                                 break;
                             case "mouseleave":
-                                // $(e.target).find(Filter.todoItemBtnGroup).removeClass('show');
-                                // $(e.target).find(Filter.todoItemBtnGroup).hide();
+                                //$this.find(Filter.todoItemBtnGroup).removeClass('show').hide();
                                 break;
                         }
                     },
-                    [Filter.flagBtn](e){
-                        
-                    }
                 },
                 "keypress": {
                     [Filter.newTodoInput](e){
@@ -149,9 +158,27 @@
 
                     // 当修改代办项的输入框失去焦点时，默认用修改后的内容替换原内容，并隐藏编辑框
                     [Filter.todoItemInput](e){
-                        //let it = Fn.getTodoItemWithEvent(e);
-                        //it.$thisItem.find(Filter.itemModifyDoneBtn).click();
-                    }
+                        let it = Fn.getTodoItemWithEvent(e);
+                        it.$thisItem.find(Filter.itemModifyDoneBtn).click();
+
+                        // 待办项编辑选项失去焦点时，自动给新建待办项输入框加上焦点
+                        Common.$newTodoInput.focus();
+                    },
+
+                    // 在所有元素都失去焦点的情况下
+                    //[Filter.body](e){
+                    //
+                    //}
+                },
+            }
+        },
+
+        // 窗口监听事件映射，和上面的事件映射函数一样，因为窗口的事件监听不能用字符串作为筛选器，
+        // 所以单独做一个映射，被startWinListener注册为 标准的jq事件监听
+        winListenerMap() {
+            return {
+                "beforeunload"(e){
+                    //alert('您输入的内容尚未保存，确定离开此页面吗？');
                 }
             }
         },
@@ -181,5 +208,6 @@
 
     BaseFn.initCommonDom(Filter, Common);
 
+    window.Listener = Fn;
     exports.Listener = Fn;
 })();

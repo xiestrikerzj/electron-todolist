@@ -66,7 +66,6 @@
             let store = transaction.objectStore(storeName);
 
             for (let i = 0, len = datas.length; i < len; i++) {
-                datas[i] = $.extend(true, {}, Conf.newTodoItemForm(), datas[i]);
                 store.add(datas[i]).onsuccess = succCallback;
             }
         },
@@ -74,6 +73,12 @@
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
             store.delete(key);
+        },
+        createStore(db,storeName,indexName,indexKey,indexOpt){
+            if (!db.objectStoreNames.contains(storeName)) {
+                let store = db.createObjectStore(storeName, {autoIncrement: true, keyPath: "id"}); // 键值自增
+                store.createIndex(indexName, indexKey, indexOpt); // 创建状态索引，将数据对象中的某个字段作为该索引的键值
+            }
         }
     };
 

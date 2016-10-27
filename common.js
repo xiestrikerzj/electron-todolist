@@ -4,27 +4,31 @@
 
 (()=> {
     let BaseFn = {
-        initCommonDom: function (filters = BaseConf.filter, obj) {
+        initCommonDom(filters = BaseConf.filter, obj) {
             $.map(filters, function (item, key) {
                 obj['$' + key] = $(item);
             });
         },
+        l(){
+            console.log.apply(this, Array.prototype.slice.call(arguments));
+        }
     };
 
-    let BaseCommon = {
-        date: new Date(),
-    };
+    let BaseCommon = {};
 
     let BaseConf = {
         mainDBName: 'todolistDB',
         mainStoreName: 'todolistStore',
+        statusStoreName: 'statusStore',
         newTodoItemForm(){
             return {
-                timeStamp: BaseCommon.date.getTime()
-                , status: BaseConf.todoStatusMap[0]
+                timeStamp: (new Date()).getTime()
+                , status: BaseConf.todoStatusMap[0] // unfinished
+                , tags: []
             }
         },
         filter: {
+            window: 'window',
             body: 'body'
             , mainContainer: ''
             , newTodoBtn: '.newTodoBtn'
@@ -39,6 +43,7 @@
             , modifyItemBtn: '.btn.modify'
             , itemModifyDoneBtn: '.btn.itemModifyDone'
             , flagBtn: '.btn.flag'
+            , tagsBtn: '.btn.tags'
             , todoItemInput: '.todoItemInput'
             , filterBtn: '.btn.filter'
             , filterAllBtn: '.btn.filter-all'

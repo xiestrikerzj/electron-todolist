@@ -16,11 +16,11 @@
             switch (data.status) {
                 case Conf.todoStatusMap[0]: // unfinished
                     itemCss += " list-group-item-info";
-                    btnGroup = [5, 0, 1, 2]; // 修改 删除 完成 旗子
+                    btnGroup = [6, 0, 1, 2]; // 标签 修改 删除 完成
                     break;
                 case Conf.todoStatusMap[1]: // finished
                     itemCss += " list-group-item-success";
-                    btnGroup = [5, 0, 1, 3]; // 修改 删除 未完成 旗子
+                    btnGroup = [6, 0, 1, 3]; // 标签 修改 删除 完成
                     break;
                 case Conf.todoStatusMap[2]: // abort
                     itemCss += " list-group-item-warning";
@@ -67,6 +67,16 @@
                 '</div>'
             ].join('');
         },
+        tagsBox(tags){
+            var tagHtml = "";
+            $.map(tags, function (item, key) {
+                tagHtml += `<span class="label label-default">${item}</span>`;
+            });
+            tagHtml = `${tagHtml}<span class="label label-default">+</span>`;
+            return `<div class="tagsBox">
+                ${tagHtml}
+                </div>`
+        }
     };
 
     let Render = {
@@ -95,8 +105,12 @@
             unfinish: Temp.iconBtn('remove unfinish'), // 3
             save: Temp.iconBtn('saved itemModifyDone'), // 4
             flag: Temp.iconBtn('flag flag'), // 5
+            tags: Temp.iconBtn('tags tags'), // 6
         }
     };
+
+    window.Temp = Temp;
+    window.Render = Render;
 
     exports.Temp = Temp;
     exports.Render = Render;
