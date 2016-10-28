@@ -21,7 +21,7 @@
             window.indexedDB.deleteDatabase(dbName);
         },
         getDataByKey(key, callback, storeName = Conf.mainStoreName, db = Common.mainDB){
-            let transaction = db.transaction(storeName, 'readwrite');
+            let transaction = db.transaction(storeName, 'readonly');
             let store = transaction.objectStore(storeName);
             let request = store.get(key);
             request.onsuccess = function (e) {
@@ -44,7 +44,7 @@
             }
         },
         getAllData(succCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
-            let transaction = db.transaction(storeName, 'readwrite');
+            let transaction = db.transaction(storeName, 'readonly');
             let store = transaction.objectStore(storeName);
             let request = store.getAll();
             request.onsuccess = succCallback;

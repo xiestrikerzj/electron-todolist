@@ -102,8 +102,15 @@
                             status: "unfinished"
                         })
                     },
-                    [Filter.tagsBtn](e){
+                    [Filter.myTag](e){
 
+                    },
+                    [Filter.otherTag](e){
+
+                    },
+                    [Filter.newTagBtn](e){
+                        var $this = $(this);
+                        $this.replaceWith(Temp.todoItemInput())
                     }
                 },
                 "dblclick": {

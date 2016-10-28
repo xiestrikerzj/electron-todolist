@@ -7,6 +7,7 @@
     let BaseFn = require('./common.js').BaseFn;
     let Common = require('./common.js').BaseCommon;
 
+    // 元素模板 形式是返回元素html的函数
     let Temp = {
         todoItem(data = {}, itemCss = ""){
             if ($.isEmptyObject(data)) {
@@ -38,12 +39,8 @@
                 '</div>'
             ].join('')
         },
-        iconBtn(className){
-            return [
-                '<button type="button" class="btn btn-primary glyphicon glyphicon-',
-                className,
-                '"></button>',
-            ].join('');
+        iconBtn({icon="ok", style = 'primary', className }={}){
+            return `<button type="button" class="btn btn-${style} glyphicon glyphicon-${icon} ${className}"></button>`;
         },
 
         // 参数是一个整形数组，包含每个按钮的索引
@@ -67,15 +64,19 @@
                 '</div>'
             ].join('');
         },
-        tagsBox(tags){
-            var tagHtml = "";
-            $.map(tags, function (item, key) {
-                tagHtml += `<span class="label label-default">${item}</span>`;
+        tag(cont = "+", style = {style: 'default', size: 3}, addClassName = ""){
+            return `<h${style.size}><span class="todoTag label label-${style.style} ${addClassName}">${cont}</span></h${style.size}>`;
+        },
+        tagsBox(myTags = []){
+            let allTags, otherTags = [], tagsHtml = "", tagHtml = "";
+            $.map(myTags, function (item, key) {
+                tagsHtml += Temp.tag(item, undefined, 'myTag');
             });
-            tagHtml = `${tagHtml}<span class="label label-default">+</span>`;
-            return `<div class="tagsBox">
-                ${tagHtml}
-                </div>`
+            $.map(otherTags, function (item, key) {
+                tagsHtml += Temp.tag(item, undefined, 'otherTag');
+            });
+            tagsHtml += Temp.iconBtn({icon: 'tag', className: 'newTagBtn', style: 'default'});
+            return `<div class="tagsBox">${tagsHtml}</div>`;
         }
     };
 
@@ -98,14 +99,18 @@
         updateTodoItem($item, data){
             $item.replaceWith(Temp.todoItem(data));
         },
+        tagsBox(tags){
+            Common.$body.append(Temp.tagsBox(tags));
+        },
         btnTempMap: {
-            modify: Temp.iconBtn('pencil modify'), // 0
-            delete: Temp.iconBtn('trash delete'), // 1
-            finish: Temp.iconBtn('ok finish'), // 2
-            unfinish: Temp.iconBtn('remove unfinish'), // 3
-            save: Temp.iconBtn('saved itemModifyDone'), // 4
-            flag: Temp.iconBtn('flag flag'), // 5
-            tags: Temp.iconBtn('tags tags'), // 6
+            modify: Temp.iconBtn({icon: 'pencil', className: 'modify'}), // 0
+            delete: Temp.iconBtn({icon: 'trash', className: 'delete'}), // 1
+            finish: Temp.iconBtn({icon: 'ok', className: 'finish'}), // 2
+            unfinish: Temp.iconBtn({icon: 'remove', className: 'unfinish'}), // 3
+            save: Temp.iconBtn({icon: 'saved', className: 'itemModifyDone'}), // 4
+            flag: Temp.iconBtn({icon: 'flag', className: 'flag'}), // 5
+            tags: Temp.iconBtn({icon: 'tags', className: 'tags'}), // 6
+            tag: Temp.iconBtn({icon: 'tag', className: 'tag'}), // 7
         }
     };
 

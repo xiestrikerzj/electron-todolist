@@ -16,9 +16,11 @@
                     Common.mainStore = Common.mainDB.transaction(Conf.mainStoreName).objectStore(Conf.mainStoreName);
                     Common.statusStore = Common.mainDB.transaction(Conf.statusStoreName).objectStore(Conf.statusStoreName);
 
+                    // 获取app状态数据，保存到全局变量
                     Db.getAllData((e)=> {
                         Common.statusData = e.target.result;
                         console.log(Common.statusData);
+                        Render.tagsBox();
                     }, Conf.statusStoreName);
 
                     BaseFn.initCommonDom(Conf.filter, Common);
@@ -29,6 +31,7 @@
                     Listener.startWinListener(); // 窗口时间监听
 
                     Common.$newTodoInput.focus(); // 进入页面时,给新建待办项输入框一个焦点
+
                 },
                 function (e) { // onupgradeneeded
                     let db = e.target.result;
