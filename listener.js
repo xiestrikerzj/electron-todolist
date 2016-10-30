@@ -3,15 +3,11 @@
  */
 
 (()=> {
-    let Conf = require('./common.js').BaseConf;
-    let Filter = Conf.filter;
-    let BaseFn = require('./common.js').BaseFn;
-    let Common = require('./common.js').BaseCommon;
     let Temp = require('./render.js').Temp;
     let Render = require('./render.js').Render;
     let Db = require('./db.js').Db;
 
-    let Fn = {
+    let fn = {
         startListener(listenerMap){
             $.each(listenerMap, (event, filters)=> {
                 $.each(filters, (filter, handler)=> {
@@ -21,7 +17,7 @@
             });
         },
 
-        startWinListener(listenerMap = Fn.winListenerMap()){
+        startWinListener(listenerMap = fn.winListenerMap()){
             $.each(listenerMap, (event, handler)=> {
                 $(window).on(event, handler);
             })
@@ -40,7 +36,7 @@
                                 let dataInd = e.target.result;
                                 Db.getDataByKey(dataInd, (data)=> {
                                     Render.aNewTodoItem(data);
-                                    BaseFn.initCommonDom(null, Common);
+                                    Fn.initCommonDom(null, Common);
                                     Common.$newTodoInput.val(null);
                                 });
                             });
@@ -55,24 +51,24 @@
                         e.stopPropagation();
                     },
                     [Filter.finishItemBtn](e){
-                        Fn.updateTodoItemWithEvent(e, {
+                        fn.updateTodoItemWithEvent(e, {
                             status: "finished"
                         });
                     },
                     [Filter.deleteItemBtn](e){
-                        let it = Fn.getTodoItemWithEvent(e);
+                        let it = fn.getTodoItemWithEvent(e);
                         Db.deleteDataByKey(it.itemId);
                         Render.updateTodoItem(it.$thisItem, {});
                     },
                     [Filter.modifyItemBtn](e){
-                        let it = Fn.getTodoItemWithEvent(e);
-                        it.$thisItem.html(Temp.todoItemInput(it.itemText));
+                        let it = fn.getTodoItemWithEvent(e);
+                        it.$thisItem.html(Temp.inputGroup({value: it.itemText, btnHtml: Temp.todoBtns()['save']}));
                         let $thisInput = it.$thisItem.find(Filter.todoItemInput);
                         $thisInput.focus().val($thisInput.val()); // 把光标移到代编辑内容尾部
                     },
                     [Filter.itemModifyDoneBtn](e){
-                        let it = Fn.getTodoItemWithEvent(e);
-                        Fn.updateTodoItemWithEvent(e, {
+                        let it = fn.getTodoItemWithEvent(e);
+                        fn.updateTodoItemWithEvent(e, {
                             cont: it.itemInputText
                         });
                     },
@@ -90,27 +86,60 @@
                         if (filterKey === 'all') {
                             Render.allTodoDataFromStore();
                         } else {
-                            Db.getMultipleDataByIndex(IDBKeyRange.only(filterKey), (cursor)=> {
-                                let data = cursor.value;
-                                console.log(data);
-                                Render.aNewTodoItem(data);
+                            Db.getDatasByIndex({
+                                IDBKeyRange: IDBKeyRange.only(filterKey), eachCallback: (cursor)=> {
+                                    // debugger
+                                    let data = cursor.value;
+                                    console.log(data);
+                                    Render.aNewTodoItem(data);
+                                }
                             });
                         }
                     },
                     [Filter.unfinishItemBtn](e){
-                        Fn.updateTodoItemWithEvent(e, {
+                        fn.updateTodoItemWithEvent(e, {
                             status: "unfinished"
                         })
+                    },
+                    [Filter.tagsBtn](e){
+                        var $this = $(this),
+                            $thisTodo = $this.parents(Filter.todoItem);
+                        if ($thisTodo.find(Common.$tagBoxContainer).length > 0) {
+                            Common.$tagBoxContainer.remove();
+                        } else {
+                            var $thisBtnGroup = $thisTodo.find(Filter.todoItemBtnGroup);
+                            $thisBtnGroup.append(Common.$tagBoxContainer);
+                            Render.tagsBox($thisTodo.data('tags'));
+                        }
                     },
                     [Filter.myTag](e){
 
                     },
                     [Filter.otherTag](e){
-
+                        var $this = $(this),
+                            $thisTodo = $this.parents(Filter.todoItem),
+                            thisVal = $this.data('val'),
+                            thisTodoTags = $thisTodo.data('tags');
+                        thisTodoTags.push(thisVal);
+                        fn.updateTodoItemWithEvent(e, {tags: thisTodoTags}); // 更新數據庫&&重繪待辦
                     },
                     [Filter.newTagBtn](e){
                         var $this = $(this);
-                        $this.replaceWith(Temp.todoItemInput())
+                        var $thisInput = $(Temp.inputGroup({
+                            className: 'newTagInput',
+                            placeholder: "回车新建标签",
+                            css: "margin: 0 auto; height: 30px;"
+                        }));
+                        $this.replaceWith($thisInput);
+                        $thisInput.focus();
+                    },
+                    [Filter.tagFilterContainr](e){
+                        $(this).toggleClass('open');
+                    },
+                    [Filter.tagMenuItem](e){
+                        var $this = $(this),
+                            thisVal = $this.val();
+                        Db.getDatasByIndex({})
                     }
                 },
                 "dblclick": {
@@ -131,7 +160,10 @@
                                 $this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
                                 break;
                             case "mouseleave":
-                                //$this.find(Filter.todoItemBtnGroup).removeClass('show').hide();
+                                // $this.find(Filter.todoItemBtnGroup).removeClass('show').hide();
+                                // if ($this.find(Common.$tagBoxContainer).length > 0) {
+                                //     Common.$tagBoxContainer.remove();
+                                // }
                                 break;
                         }
                     },
@@ -148,7 +180,7 @@
                         }
                     },
                     [Filter.todoItemInput](e){
-                        let it = Fn.getTodoItemWithEvent(e);
+                        let it = fn.getTodoItemWithEvent(e);
                         switch (e.keyCode) {
                             case 13: // enter
                                 it.$thisItem.find(Filter.itemModifyDoneBtn).click();
@@ -160,16 +192,47 @@
                                 break;
                         }
                     },
+                    [Filter.newTagInput](e){
+                        var $this = $(this), tagList = Common.tagList;
+                        switch (e.keyCode) {
+                            case 13: // enter
+                                var val = $this.val();
+                                if (tagList.includes(val)) {
+                                    alert('该标签已存在');
+                                } else if (val.length === 0) {
+                                    alert('请输入标签名');
+                                } else if (val.length > 6) {
+                                    alert('标签太长');
+                                } else {
+                                    tagList.push(val);
+                                    var $tag = $(Temp.tag({cont: val, className: 'otherTag'}));
+                                    $this.before($tag);
+                                    $tag.click();
+                                    Db.updateDataByPrimaryKey({
+                                        key: Common.mainStatusData.id,
+                                        valObj: Common.mainStatusData,
+                                        storeName: Conf.statusStoreName
+                                    });
+                                    Render.tagMenuItem({tags: Common.tagList});
+                                }
+                                break;
+                        }
+                    }
                 },
                 "blur": {
 
                     // 当修改代办项的输入框失去焦点时，默认用修改后的内容替换原内容，并隐藏编辑框
                     [Filter.todoItemInput](e){
-                        let it = Fn.getTodoItemWithEvent(e);
+                        let it = fn.getTodoItemWithEvent(e);
                         it.$thisItem.find(Filter.itemModifyDoneBtn).click();
 
                         // 待办项编辑选项失去焦点时，自动给新建待办项输入框加上焦点
                         Common.$newTodoInput.focus();
+                    },
+
+                    [Filter.newTagInput](e){
+                        // var $this = $(this);
+                        // $this.replaceWith(Temp.todoBtns()['newTag']);
                     },
 
                     // 在所有元素都失去焦点的情况下
@@ -202,19 +265,22 @@
             }
         },
 
+        // 更新數據庫&&重繪待辦
         updateTodoItemWithEvent(event, valObj){
-            let it = Fn.getTodoItemWithEvent(event);
-            Db.updateDataByKey(it.itemId, valObj);
-            Db.getDataByKey(it.itemId, (data)=> {
-                if (typeof data !== "undefined") {
-                    Render.updateTodoItem(it.$thisItem, data);
+            let it = fn.getTodoItemWithEvent(event);
+            Db.updateDataByPrimaryKey({key: it.itemId, valObj: valObj});
+            Db.getDataByPrimaryKey({
+                key: it.itemId, callback: (data)=> {
+                    if (typeof data !== "undefined") {
+                        Render.updateTodoItem(it.$thisItem, data);
+                    }
                 }
             });
         }
     };
 
-    BaseFn.initCommonDom(Filter, Common);
+    Fn.initCommonDom(Filter, Common);
 
-    window.Listener = Fn;
-    exports.Listener = Fn;
+    window.Listener = fn;
+    exports.Listener = fn;
 })();

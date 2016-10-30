@@ -18,12 +18,33 @@
 <div class="row">
     <ul class="col-xs-10 list-group todolistContainer" style="padding: 0;"></ul>
 
+    <div class="dropdown tagFilterContainr col-xs-2 fr">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+            <input type="text" placeholder="标签筛选" id="tagFilterInput">
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right" id="tagMenu1" role="menu" aria-labelledby="dropdownMenu1">
+            <li role="presentation" style="padding: 0 5%;">
+                <div class="btn-group" style="width: 100%;">
+                    <button type="button" class="btn btn-default tagFilterBtn">单选</button>
+                    <button type="button" class="btn btn-default tagFilterBtn">多选</button>
+                </div>
+            </li>
+            <li role="presentation" class="divider" id="tagMenuCrossline"></li>
+            <!--标签列表项占位，用于初始化时替换，不要删-->
+            <li role="presentation" class="tagMenuItem"><a role="menuitem" tabindex="-1" href="#">没有标签</a></li>
+        </ul>
+    </div>
+
     <div class="col-xs-2 btn-group-vertical" style="padding: 0;">
         <button type="button" class="btn btn-default filter-all filter">所有</button>
         <button type="button" class="btn btn-default filter-unfinished filter">未完成</button>
         <button type="button" class="btn btn-default filter-finished filter">已完成</button>
     </div>
 </div>
+
+<div class="tagBoxContainer"></div>
+
 </body>
 <footer>
     <!-- Insert this line above script imports  -->

@@ -3,9 +3,6 @@
  */
 
 (()=> {
-    let Conf = require('./common.js').BaseConf;
-    let BaseFn = require('./common.js').BaseFn;
-    let Common = require('./common.js').BaseCommon;
 
     let Db = {
         openDB (name, version = 1, onsuccess, onupgradeneeded, onerror){
@@ -20,7 +17,7 @@
         deleteDB(dbName){
             window.indexedDB.deleteDatabase(dbName);
         },
-        getDataByKey(key, callback, storeName = Conf.mainStoreName, db = Common.mainDB){
+        getDataByPrimaryKey({key, callback, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let transaction = db.transaction(storeName, 'readonly');
             let store = transaction.objectStore(storeName);
             let request = store.get(key);
@@ -28,20 +25,31 @@
                 callback && callback(e.target.result);
             };
         },
-        getMultipleDataByIndex(keyRangeObj, succCallback, indexName = "statusIndex", storeName = Conf.mainStoreName, db = Common.mainDB){
+        getDataByIndex({index, callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
+            var transaction = db.transaction(storeName);
+            var store = transaction.objectStore(storeName);
+            var ind = store.index(indexName);
+            ind.get(index).onsuccess = (e) => {
+                callback && callback(e.target.result);
+            }
+        },
+        getDatasByIndex({IDBKeyRange, callback, eachCallback, indexName = Conf.mainIndexName, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let transaction = db.transaction(storeName);
             let store = transaction.objectStore(storeName);
             let index = store.index(indexName);
-            let request = index.openCursor(keyRangeObj)
+            let request = index.openCursor(IDBKeyRange);
+            let datas = [], keys = [];
             request.onsuccess = function (e) {
                 let cursor = e.target.result;
                 if (cursor) {
-                    succCallback(cursor);
-                    // let student = cursor.value;
-                    // console.log(student);
+                    datas.push(cursor.value);
+                    keys.push(cursor.key);
+                    eachCallback && eachCallback(cursor);
                     cursor.continue();
+                } else {
+                    callback && callback(datas, keys);
                 }
-            }
+            };
         },
         getAllData(succCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
             let transaction = db.transaction(storeName, 'readonly');
@@ -50,7 +58,8 @@
             request.onsuccess = succCallback;
         },
 
-        updateDataByKey(key, valObj, storeName = Conf.mainStoreName, db = Common.mainDB){
+        //
+        updateDataByPrimaryKey({key, valObj, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
             let request = store.get(key);
@@ -69,17 +78,53 @@
                 store.add(datas[i]).onsuccess = succCallback;
             }
         },
-        deleteDataByKey(key, storeName = Conf.mainStoreName, db = Common.mainDB){
+        deleteDataByPrimaryKey(key, storeName = Conf.mainStoreName, db = Common.mainDB){
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
             store.delete(key);
         },
-        createStore(db,storeName,indexName,indexKey,indexOpt){
+        createStore(db, storeName, indexName, indexKey, indexOpt){
             if (!db.objectStoreNames.contains(storeName)) {
                 let store = db.createObjectStore(storeName, {autoIncrement: true, keyPath: "id"}); // 键值自增
                 store.createIndex(indexName, indexKey, indexOpt); // 创建状态索引，将数据对象中的某个字段作为该索引的键值
             }
+        },
+        createIndex({store, name = Conf.mainIndexName, key = 'status', options = {unique: false}}){
+            if ($.isEmptyObject(store))return;
+            store.createIndex(name, key, options); // 创建状态索引，将数据对象中的某个字段作为该索引的键值
+        },
+        getTodoDatas({
+            id, status, tags = [], callback = ()=> {
         }
+        }){
+            let transaction = db.transaction(Conf.mainStoreName, 'readonly');
+            let store = transaction.objectStore(Conf.mainStoreName);
+            let request;
+            if ($.isNumeric(id)) {
+                request = store.get(id);
+                request.onsuccess = function (e) {
+                    callback(e.target.result);
+                };
+            } else if (typeof status === 'string') {
+                let index = store.index('status'), datas = [];
+                request = index.openCursor(IDBKeyRange.only(status))
+                request.onsuccess = function (e) {
+                    let cursor = e.target.result;
+                    if (cursor) {
+                        datas.push(cursor.value);
+                        cursor.continue();
+                    }
+                };
+                callback(datas);
+            } else if ($.isArray(tags) && !$.isEmptyObject(tags)) {
+
+            } else {
+                request = store.getAll();
+                request.onsuccess = function (e) {
+                    callback(e.target.result);
+                };
+            }
+        },
     };
 
     window.Db = Db;

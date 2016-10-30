@@ -1,9 +1,12 @@
 {
-	"name"    : "your-app",
-	"version" : "0.1.0",
-	"main"    : "app.js",
-	"scripts": {
-		"start": "electron .",
-		"package": "electron-packager ./ --all --out ~/Desktop/app --version 1.4.0 --overwrite --icon=./src/img/weather.ico"
-	}
+  "name": "your-app",
+  "version": "0.1.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-packager ./ --all --out ~/Desktop/app --version 1.4.0 --overwrite --icon=./src/img/weather.ico"
+  },
+  "devDependencies": {
+    "electron": "^1.4.4"
+  }
 }
