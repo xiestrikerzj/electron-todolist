@@ -1,4 +1,5 @@
 .todolistContainer{
+    min-height: 200px;
 }
 .todolistContainer .todoItem {
     position: initial;

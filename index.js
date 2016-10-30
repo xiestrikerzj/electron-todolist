@@ -6,9 +6,10 @@
 
     let fn = {
         init(){
-            let dbVersion = 8; // 数据库版本，修改后才会执行onupgradeneeded事件处理函数
-            Db.openDB(Conf.mainDBName, dbVersion,
-                function (e) { // onsuccess
+            let dbVersion = 15; // 数据库版本，修改后才会执行onupgradeneeded事件处理函数
+            Db.openDB({
+                name: Conf.mainDBName, version: dbVersion,
+                onsuccess: (e)=> { // onsuccess
                     Common.mainDB = e.target.result;
                     Common.mainStore = Common.mainDB.transaction(Conf.mainStoreName).objectStore(Conf.mainStoreName);
                     Common.statusStore = Common.mainDB.transaction(Conf.statusStoreName).objectStore(Conf.statusStoreName);
@@ -50,11 +51,11 @@
                     Common.$newTodoInput.focus(); // 进入页面时,给新建待办项输入框一个焦点
 
                 },
-                function (e) { // onupgradeneeded
+                onupgradeneeded: (e)=> { // onupgradeneeded
                     let db = e.target.result;
                     // 主仓库，用来存储待办项数据
-                    debugger
                     if (!db.objectStoreNames.contains(Conf.mainStoreName)) {
+                        window.indexedDB.deleteDatabase('todolistDB')
                         let store = db.createObjectStore(Conf.mainStoreName, {autoIncrement: true, keyPath: "id"}); // 键值自增
                         Db.createIndex({
                             store: store,
@@ -71,7 +72,7 @@
                     }
                     // 状态仓库，用于存储：已创建的标签、关闭应用时的状态（用于开启应用后恢复）
                     if (!db.objectStoreNames.contains(Conf.statusStoreName)) {
-                        let store = db.createObjectStore(Conf.statusIndexName, {autoIncrement: true, keyPath: "id"}); // 键值自增
+                        let store = db.createObjectStore(Conf.statusStoreName, {autoIncrement: true, keyPath: "id"}); // 键值自增
                         Db.createIndex({
                                 store: store,
                                 name: Conf.statusIndexName,
@@ -82,9 +83,10 @@
                     }
                     console.log('DB version changed to ' + dbVersion);
                 },
-                function (e) { // onerror
+                onerror: (e)=> { // onerror
                     console.log(e.currentTarget.error.message);
-                });
+                }
+            });
         },
     };
 

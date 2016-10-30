@@ -5,7 +5,7 @@
 (()=> {
 
     let Db = {
-        openDB (name, version = 1, onsuccess, onupgradeneeded, onerror){
+        openDB ({name, version = 1, onsuccess, onupgradeneeded, onerror}){
             let request = window.indexedDB.open(name, version);
             request.onerror = onerror;
             request.onsuccess = onsuccess;
@@ -34,17 +34,17 @@
             }
         },
         getDatasByIndex({IDBKeyRange, callback, eachCallback, indexName = Conf.mainIndexName, storeName = Conf.mainStoreName, db = Common.mainDB}){
+            let datas = [], keys = [];
             let transaction = db.transaction(storeName);
             let store = transaction.objectStore(storeName);
             let index = store.index(indexName);
             let request = index.openCursor(IDBKeyRange);
-            let datas = [], keys = [];
             request.onsuccess = function (e) {
                 let cursor = e.target.result;
                 if (cursor) {
+                    eachCallback && eachCallback(cursor);
                     datas.push(cursor.value);
                     keys.push(cursor.key);
-                    eachCallback && eachCallback(cursor);
                     cursor.continue();
                 } else {
                     callback && callback(datas, keys);
@@ -78,7 +78,7 @@
                 store.add(datas[i]).onsuccess = succCallback;
             }
         },
-        deleteDataByPrimaryKey(key, storeName = Conf.mainStoreName, db = Common.mainDB){
+        deleteDataByPrimaryKey({key, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
             store.delete(key);

@@ -34,10 +34,12 @@
                             let targData = $.extend(true, {}, Conf.newTodoItemForm(), {cont: newTodoCont});
                             Db.addDatas(targData, (e)=> {
                                 let dataInd = e.target.result;
-                                Db.getDataByKey(dataInd, (data)=> {
-                                    Render.aNewTodoItem(data);
-                                    Fn.initCommonDom(null, Common);
-                                    Common.$newTodoInput.val(null);
+                                Db.getDataByPrimaryKey({
+                                    key: dataInd, callback: (data)=> {
+                                        Render.todoItems({datas: data});
+                                        Fn.initCommonDom(null, Common);
+                                        Common.$newTodoInput.val(null);
+                                    }
                                 });
                             });
                         }
@@ -57,7 +59,7 @@
                     },
                     [Filter.deleteItemBtn](e){
                         let it = fn.getTodoItemWithEvent(e);
-                        Db.deleteDataByKey(it.itemId);
+                        Db.deleteDataByPrimaryKey({key: it.itemId});
                         Render.updateTodoItem(it.$thisItem, {});
                     },
                     [Filter.modifyItemBtn](e){
@@ -87,11 +89,8 @@
                             Render.allTodoDataFromStore();
                         } else {
                             Db.getDatasByIndex({
-                                IDBKeyRange: IDBKeyRange.only(filterKey), eachCallback: (cursor)=> {
-                                    // debugger
-                                    let data = cursor.value;
-                                    console.log(data);
-                                    Render.aNewTodoItem(data);
+                                IDBKeyRange: IDBKeyRange.only(filterKey), callback: (datas)=> {
+                                    Render.todoItems({datas: datas});
                                 }
                             });
                         }
@@ -118,7 +117,7 @@
                     [Filter.otherTag](e){
                         var $this = $(this),
                             $thisTodo = $this.parents(Filter.todoItem),
-                            thisVal = $this.data('val'),
+                            thisVal = String($this.data('val')),
                             thisTodoTags = $thisTodo.data('tags');
                         thisTodoTags.push(thisVal);
                         fn.updateTodoItemWithEvent(e, {tags: thisTodoTags}); // 更新數據庫&&重繪待辦
@@ -137,9 +136,21 @@
                         $(this).toggleClass('open');
                     },
                     [Filter.tagMenuItem](e){
-                        var $this = $(this),
-                            thisVal = $this.val();
-                        Db.getDatasByIndex({})
+                        let $this = $(this),
+                            thisVal = String($this.data('val'));
+                        let todos = [];
+                        Db.getDatasByIndex({
+                            indexName: 'tagsIndex', eachCallback: (cursor)=> {
+                                let key = cursor.key;
+                                let data = cursor.value;
+                                if (key.includes(thisVal)) {
+                                    todos.push(data);
+                                }
+                                Common.$todolistContainer.html('');
+                            },callback:()=>{
+                                Render.todoItems({datas: todos})
+                            }
+                        })
                     }
                 },
                 "dblclick": {
@@ -204,7 +215,7 @@
                                 } else if (val.length > 6) {
                                     alert('标签太长');
                                 } else {
-                                    tagList.push(val);
+                                    tagList.push(String(val));
                                     var $tag = $(Temp.tag({cont: val, className: 'otherTag'}));
                                     $this.before($tag);
                                     $tag.click();
@@ -279,7 +290,7 @@
         }
     };
 
-    Fn.initCommonDom(Filter, Common);
+    // Fn.initCommonDom(Filter, Common);
 
     window.Listener = fn;
     exports.Listener = fn;

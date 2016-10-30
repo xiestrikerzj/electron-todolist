@@ -109,20 +109,20 @@
     };
 
     let Render = {
-        allTodoItems(datas){
-            $.each(datas, (key, data)=> {
-                Render.aNewTodoItem(data);
+        todoItems({datas = datas, $container = Common.$todolistContainer}){
+            datas = [].concat(datas);
+            let html = '';
+            $.map(datas, (data)=> {
+                html = Temp.todoItem(data) + html;
             });
+            $container.prepend(html);
         },
         allTodoDataFromStore(){
             Db.getAllData((e)=> {
                 Common.todolistData = e.target.result;
-                Render.allTodoItems(Common.todolistData);
+                Render.todoItems({datas: Common.todolistData});
                 Fn.initCommonDom(Filter, Common);
             });
-        },
-        aNewTodoItem(data, $container = Common.$todolistContainer){
-            $container.prepend(Temp.todoItem(data));
         },
         updateTodoItem($item, data){
             $item.replaceWith(Temp.todoItem(data));
@@ -135,7 +135,7 @@
             $.map(tags, (item)=> {
                 tagHtml += Temp.tagMenuItem({cont: item});
             });
-            if(tagHtml !== ''){
+            if (tagHtml !== '') {
                 // debugger
                 $(Filter.tagMenuItem).remove();
                 Common.$tagMenuCrossline.after(tagHtml);
