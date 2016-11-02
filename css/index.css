@@ -1,17 +1,55 @@
-.todolistContainer{
+.todolistContainer {
     min-height: 200px;
+    width: 80%;
+    float: left;
 }
+
 .todolistContainer .todoItem {
     position: initial;
     height: 42px;
 }
-.todoItemBtnGroup{
+
+.todoItemBtnGroup {
     /*position: absolute;*/
     /*bottom: 4px;*/
     /*right: 5px;*/
     margin: -8px;
 }
-.todoTag{
+
+/*筛选栏*/
+.filterContainer{
+    width: 20%;
+    float: right;
+}
+
+.filterBox{
+    width: 100%;
+}
+
+.filter{
+
+}
+/*标签盒子*/
+.tagsBox {
+    width: 157px;
+    overflow: hidden;
+    /*float: left;*/
+    margin-top: 2px;
+}
+
+.tagFilterBtn{
+    border-radius:0;
+}
+
+.crossLine {
+    width: 100%;
+    border-top: 1px #777 solid;
+    margin: 2px;
+    float: left;
+    clear: both;
+}
+
+.todoTag {
     cursor: pointer;
     font-size: 14px;
     margin: 1px;
@@ -19,29 +57,37 @@
     float: left;
     border: 1px solid #777;
 }
-.todoTag:hover{
+.todoTag:hover {
     background-color: white;
     color: #777;
 }
-.tagBoxContainer{
-    width: 157px;
-    overflow: hidden;
-    /*float: left;*/
-    margin-top: 2px;
+.todoTag.otherTag {
+    border: 1px solid #777;
 }
-.crossLine{
-    width: 100%;
-    border: 1px solid black;
-    margin: 2px;
-    float: left;
-    clear: both;
+
+.todoTag.myTag,.todoTag.noTag{
+    border: 1px solid #428bca;
 }
+
+.todoTag.otherTag:hover {
+    background-color: white;
+    color: #777;
+}
+
+.todoTag.myTag:hover,.todoTag.noTag:hover{
+    background-color: white;
+    color: #428bca;
+}
+
+/*标签筛选栏*/
 .tagFilterContainr {
     padding-left: 0;
 }
-#tagFilterInput{
-    width: 90%;
+
+#tagFilterInput {
+    /*width: 90%;*/
 }
-.tagFilterBtn{
+
+.tagFilterBtn {
     width: 50%;
 }

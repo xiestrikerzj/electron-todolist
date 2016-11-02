@@ -60,34 +60,40 @@
         // 参数是一个整形数组，包含每个按钮的索引
         todoItemBtnGroup(btns){
             return `<div class="todoItemBtnGroup fr" style="display:none;">
+            <!--按钮组-->
             <div class="btn-group">
                 ${$.map(btns, (ind, key)=> {
                 return Temp.todoBtns()[ind];
             }).join('')}
                 </div>
+                <!--标签容器-->
+                <div class="tagsBox clearfix"></div>
                 </div>`;
         },
         inputGroup({value = "", className = "todoItemInput", placeholder = "输入待办项并回车", btnHtml = '', css = ""}={}){
-            var inputHtml = `<input type="text" class="form-control ${className}" placeholder="${placeholder}" value="${value}" style="${css}">`;
+            var inputHtml = ``;
             if (btnHtml) {
-                return `<div class="input-group">
-                ${inputHtml}
+                return `<div class="input-group"  style="${css}">
+                <input type="text" class="form-control ${className}" placeholder="${placeholder}" value="${value}">
                 <span class="input-group-btn">
                 ${btnHtml}
                 </span>
                 </div>`
             } else {
-                return inputHtml;
+                return `<input type="text" class="form-control ${className}" placeholder="${placeholder}" value="${value}" style="${css}">`;
             }
-
         },
         tag({cont = "+", style = 'default', css = "", className = ""}){
             return `<div class="todoTag label label-${style} ${className}" style="${css}" data-val="${cont}">${cont}</div>`;
         },
-        tagsBox(myTags = []){
-            let allTags = Common.tagList, myTagsHtml = "", otherTagsHtml = "";
+        tagsBox({myTags = [],allTags=[]}) {
+            let myTagsHtml = "", otherTagsHtml = "";
             $.map(myTags, (item)=> {
-                myTagsHtml += Temp.tag({cont: item, className: 'myTag'});
+                allTags.includes(item) && (myTagsHtml += Temp.tag({
+                    cont: item,
+                    className: 'myTag',
+                    style: 'primary'
+                }));
             });
             $.map(allTags, function (item, key) {
                 if (!myTags.includes(item)) {
@@ -95,13 +101,16 @@
                 }
             });
 
-            // 如果待办项沒有标签，默认加上“无标签”标签
-            // debugger
-            myTagsHtml === "" && (myTagsHtml = Temp.tag({cont: "无标签", className: 'noTag'}));
+            // 如果待办项沒有标签，加上默认标签
+            myTagsHtml === "" && (myTagsHtml = Temp.tag({
+                cont: "点灰色按钮添加标签",
+                className: 'noTag',
+                style: 'primary'
+            }));
 
             // 其他标签后面加上一个“+”标签用于新增标签
             otherTagsHtml += Temp.todoBtns()['newTag'];
-            return `<div class="tagsBox clearfix">${myTagsHtml}<div class="crossLine"></div>${otherTagsHtml}</div>`;
+            return `${myTagsHtml}<div class="crossLine"></div>${otherTagsHtml}`;
         },
         tagMenuItem({cont = ''}){
             return `<li role="presentation" class="tagMenuItem" data-val="${cont}"><a role="menuitem" tabindex="-1" href="#">${cont}</a></li>`;
@@ -109,26 +118,33 @@
     };
 
     let Render = {
-        todoItems({datas = datas, $container = Common.$todolistContainer}){
+        todoItems({datas = datas,prepend=false, $container = Common.$todolistContainer}){
             datas = [].concat(datas);
             let html = '';
             $.map(datas, (data)=> {
                 html = Temp.todoItem(data) + html;
             });
-            $container.prepend(html);
+            prepend ? $container.prepend(html) : $container.html(html);
         },
         allTodoDataFromStore(){
-            Db.getAllData((e)=> {
-                Common.todolistData = e.target.result;
-                Render.todoItems({datas: Common.todolistData});
-                Fn.initCommonDom(Filter, Common);
+            Db.getAllData({
+                callback: (todolistData)=> {
+                    Common.todolistData = todolistData;
+                    Render.todoItems({datas: Common.todolistData});
+                    Fn.initCommonDom(Filter, Common);
+                }
             });
         },
         updateTodoItem($item, data){
             $item.replaceWith(Temp.todoItem(data));
         },
-        tagsBox(tags){
-            Common.$tagBoxContainer.html(Temp.tagsBox(tags));
+        tagsBox({tags=[],$container=$('body')}){
+            Db.getDataByIndex({
+                callback: (data)=> {
+                    let allTags = data.tags;
+                    $container.html(Temp.tagsBox({myTags: tags, allTags: allTags}));
+                }
+            });
         },
         tagMenuItem({tags = []}){
             let tagHtml = '';
@@ -136,7 +152,6 @@
                 tagHtml += Temp.tagMenuItem({cont: item});
             });
             if (tagHtml !== '') {
-                // debugger
                 $(Filter.tagMenuItem).remove();
                 Common.$tagMenuCrossline.after(tagHtml);
             }

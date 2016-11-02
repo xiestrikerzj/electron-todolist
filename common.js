@@ -54,6 +54,10 @@
         , tagMenuCrossline: '#tagMenuCrossline'
         , tagMenuItem: '.tagMenuItem'
         , tagFilterInput: '#tagFilterInput'
+        , tagFilterDropdownBtn: '.tagFilterContainr #dropdownMenu'
+        , tagFilterBtnGroup: '.tagFilterContainr #dropdownMenu'
+
+
     };
 
     window.Conf = {

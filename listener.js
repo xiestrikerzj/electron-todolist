@@ -36,7 +36,7 @@
                                 let dataInd = e.target.result;
                                 Db.getDataByPrimaryKey({
                                     key: dataInd, callback: (data)=> {
-                                        Render.todoItems({datas: data});
+                                        Render.todoItems({datas: data, prepend: true});
                                         Fn.initCommonDom(null, Common);
                                         Common.$newTodoInput.val(null);
                                     }
@@ -53,8 +53,10 @@
                         e.stopPropagation();
                     },
                     [Filter.finishItemBtn](e){
-                        fn.updateTodoItemWithEvent(e, {
-                            status: "finished"
+                        fn.updateTodoItemWithEvent({
+                            event: e, valObj: {
+                                status: "finished"
+                            }
                         });
                     },
                     [Filter.deleteItemBtn](e){
@@ -64,55 +66,66 @@
                     },
                     [Filter.modifyItemBtn](e){
                         let it = fn.getTodoItemWithEvent(e);
-                        it.$thisItem.html(Temp.inputGroup({value: it.itemText, btnHtml: Temp.todoBtns()['save']}));
+                        it.$thisItem.html(Temp.inputGroup({
+                            value: it.itemText,
+                            btnHtml: Temp.todoBtns()['save'],
+                            css: "margin-left: -14px; margin-top: -7px; margin-bottom: -7px;"
+                        }));
                         let $thisInput = it.$thisItem.find(Filter.todoItemInput);
                         $thisInput.focus().val($thisInput.val()); // 把光标移到代编辑内容尾部
                     },
                     [Filter.itemModifyDoneBtn](e){
                         let it = fn.getTodoItemWithEvent(e);
-                        fn.updateTodoItemWithEvent(e, {
-                            cont: it.itemInputText
+                        fn.updateTodoItemWithEvent({
+                            event: e, valObj: {
+                                cont: it.itemInputText
+                            }
                         });
                     },
                     [Filter.filterBtn](e){
                         let $this = $(this);
                         let filterMap = {all: "all", finished: 'finished', unfinished: 'unfinished'};
                         let filterKey;
+                        $this.addClass('btn-primary').siblings().removeClass('btn-primary');
+
+                        // 获取筛选值
                         $.map(filterMap, (item, key)=> {
                             if ($this.hasClass('filter-' + item)) {
                                 filterKey = key;
                             }
                         });
-                        if (typeof filterMap === 'undefined') return;
-                        Common.$todolistContainer.html('');
-                        if (filterKey === 'all') {
-                            Render.allTodoDataFromStore();
-                        } else {
-                            Db.getDatasByIndex({
-                                IDBKeyRange: IDBKeyRange.only(filterKey), callback: (datas)=> {
-                                    Render.todoItems({datas: datas});
-                                }
-                            });
-                        }
+
+                        // 更新搜索状态和搜索按钮样式
+                        Db.updateDataByIndex({
+                            valObj: {statusFilter: filterKey}, callback: (data)=> {
+                                Db.getTodoDatas({status: data.statusFilter, tags: data.tagsFilter});
+                            }
+                        });
                     },
                     [Filter.unfinishItemBtn](e){
-                        fn.updateTodoItemWithEvent(e, {
-                            status: "unfinished"
+                        fn.updateTodoItemWithEvent({
+                            event: e, valObj: {
+                                status: "unfinished"
+                            }
                         })
                     },
                     [Filter.tagsBtn](e){
                         var $this = $(this),
                             $thisTodo = $this.parents(Filter.todoItem);
-                        if ($thisTodo.find(Common.$tagBoxContainer).length > 0) {
-                            Common.$tagBoxContainer.remove();
-                        } else {
-                            var $thisBtnGroup = $thisTodo.find(Filter.todoItemBtnGroup);
-                            $thisBtnGroup.append(Common.$tagBoxContainer);
-                            Render.tagsBox($thisTodo.data('tags'));
-                        }
+                        var $thisBtnGroup = $thisTodo.find(Filter.todoItemBtnGroup);
+                        Render.tagsBox({
+                            tags: $thisTodo.data('tags'),
+                            $container: $thisBtnGroup.find(Filter.tagsBox)
+                        });
                     },
                     [Filter.myTag](e){
-
+                        var $this = $(this),
+                            $thisTodo = $this.parents(Filter.todoItem),
+                            thisVal = String($this.data('val')),
+                            thisTodoTags = $thisTodo.data('tags'),
+                            thisValInd = thisTodoTags.indexOf(thisVal);
+                        thisTodoTags.splice(thisValInd, 1);
+                        fn.updateTodoItemWithEvent({event: e, valObj: {tags: thisTodoTags}}); // 更新數據庫&&重繪待辦
                     },
                     [Filter.otherTag](e){
                         var $this = $(this),
@@ -120,7 +133,7 @@
                             thisVal = String($this.data('val')),
                             thisTodoTags = $thisTodo.data('tags');
                         thisTodoTags.push(thisVal);
-                        fn.updateTodoItemWithEvent(e, {tags: thisTodoTags}); // 更新數據庫&&重繪待辦
+                        fn.updateTodoItemWithEvent({event: e, valObj: {tags: thisTodoTags}}); // 更新數據庫&&重繪待辦
                     },
                     [Filter.newTagBtn](e){
                         var $this = $(this);
@@ -138,19 +151,26 @@
                     [Filter.tagMenuItem](e){
                         let $this = $(this),
                             thisVal = String($this.data('val'));
-                        let todos = [];
-                        Db.getDatasByIndex({
-                            indexName: 'tagsIndex', eachCallback: (cursor)=> {
-                                let key = cursor.key;
-                                let data = cursor.value;
-                                if (key.includes(thisVal)) {
-                                    todos.push(data);
-                                }
-                                Common.$todolistContainer.html('');
-                            },callback:()=>{
-                                Render.todoItems({datas: todos})
+                        //let todos = [];
+                        Common.$tagFilterInput.val(`标签:${thisVal}`); // 输入框显示为点击的按钮文案
+
+                        //Db.getDatasByIndex({
+                        //    indexName: Conf.mainIndexName, eachCallback: (data)=> {
+                        //        if ((data.tags || []).includes(thisVal)) {
+                        //            todos.push(data);
+                        //        }
+                        //        Common.$todolistContainer.html('');
+                        //    }, callback: ()=> {
+                        //        Render.todoItems({datas: todos})
+                        //    }
+                        //});
+
+                        // 更新搜索状态和搜索按钮样式
+                        Db.updateDataByIndex({
+                            valObj: {tagsFilter: [thisVal]}, callback: (data)=> {
+                                Db.getTodoDatas({status: data.statusFilter, tags: data.tagsFilter});
                             }
-                        })
+                        });
                     }
                 },
                 "dblclick": {
@@ -219,10 +239,8 @@
                                     var $tag = $(Temp.tag({cont: val, className: 'otherTag'}));
                                     $this.before($tag);
                                     $tag.click();
-                                    Db.updateDataByPrimaryKey({
-                                        key: Common.mainStatusData.id,
-                                        valObj: Common.mainStatusData,
-                                        storeName: Conf.statusStoreName
+                                    Db.updateDataByIndex({
+                                        valObj: {tags: tagList}
                                     });
                                     Render.tagMenuItem({tags: Common.tagList});
                                 }
@@ -230,12 +248,17 @@
                         }
                     }
                 },
+                "focus": {
+                    [Filter.tagFilterInput](e){
+                        Common.$tagFilterDropdownBtn.click();
+                    }
+                },
                 "blur": {
 
                     // 当修改代办项的输入框失去焦点时，默认用修改后的内容替换原内容，并隐藏编辑框
                     [Filter.todoItemInput](e){
-                        let it = fn.getTodoItemWithEvent(e);
-                        it.$thisItem.find(Filter.itemModifyDoneBtn).click();
+                        //let it = fn.getTodoItemWithEvent(e);
+                        //it.$thisItem.find(Filter.itemModifyDoneBtn).click();
 
                         // 待办项编辑选项失去焦点时，自动给新建待办项输入框加上焦点
                         Common.$newTodoInput.focus();
@@ -277,13 +300,13 @@
         },
 
         // 更新數據庫&&重繪待辦
-        updateTodoItemWithEvent(event, valObj){
+        updateTodoItemWithEvent({event, valObj,callback,isDeepExtend=false}){
             let it = fn.getTodoItemWithEvent(event);
-            Db.updateDataByPrimaryKey({key: it.itemId, valObj: valObj});
-            Db.getDataByPrimaryKey({
-                key: it.itemId, callback: (data)=> {
+            Db.updateDataByPrimaryKey({
+                key: it.itemId, valObj: valObj, isDeepExtend: isDeepExtend, callback: (data)=> {
                     if (typeof data !== "undefined") {
                         Render.updateTodoItem(it.$thisItem, data);
+                        callback && callback(data);
                     }
                 }
             });

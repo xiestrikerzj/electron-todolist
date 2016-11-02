@@ -17,6 +17,17 @@
         deleteDB(dbName){
             window.indexedDB.deleteDatabase(dbName);
         },
+        useDatabase(db) {
+            // 确保添加一个如果另一个页面请求一个版本变化时来被通知的处理程序。
+            // 我们必须关闭这个数据库。这就允许其他页面对数据库进行升级。
+            // 如果你不这么做的话，除非用户关闭标签页否则升级就不会发生。
+            db.onversionchange = function (event) {
+                db.close();
+                alert("A new version of this page is ready. Please reload!");
+            };
+
+            // 其他针对数据库的处理
+        },
         getDataByPrimaryKey({key, callback, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let transaction = db.transaction(storeName, 'readonly');
             let store = transaction.objectStore(storeName);
@@ -25,7 +36,7 @@
                 callback && callback(e.target.result);
             };
         },
-        getDataByIndex({index, callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
+        getDataByIndex({index='main', callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
             var transaction = db.transaction(storeName);
             var store = transaction.objectStore(storeName);
             var ind = store.index(indexName);
@@ -42,7 +53,7 @@
             request.onsuccess = function (e) {
                 let cursor = e.target.result;
                 if (cursor) {
-                    eachCallback && eachCallback(cursor);
+                    eachCallback && eachCallback(cursor.value, cursor);
                     datas.push(cursor.value);
                     keys.push(cursor.key);
                     cursor.continue();
@@ -51,23 +62,40 @@
                 }
             };
         },
-        getAllData(succCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
+        getAllData({callback, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let transaction = db.transaction(storeName, 'readonly');
             let store = transaction.objectStore(storeName);
             let request = store.getAll();
-            request.onsuccess = succCallback;
+            request.onsuccess = (e)=> {
+                callback && callback(e.target.result, e);
+            }
         },
 
         //
-        updateDataByPrimaryKey({key, valObj, storeName = Conf.mainStoreName, db = Common.mainDB}){
+        updateDataByPrimaryKey({key, valObj, storeName = Conf.mainStoreName, db = Common.mainDB,callback, isDeepExtend=false}){
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
             let request = store.get(key);
             request.onsuccess = function (e) {
                 let data = e.target.result;
-                $.extend(true, data, valObj);
+                data = $.extend(isDeepExtend, data, valObj);
                 store.put(data);
+                callback && callback(data);
             };
+        },
+        updateDataByIndex({index='main',valObj, callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
+            var transaction = db.transaction(storeName);
+            var store = transaction.objectStore(storeName);
+            var ind = store.index(indexName);
+            ind.get(index).onsuccess = (e) => {
+                var data = e.target.result;
+                Db.updateDataByPrimaryKey({
+                    key: data.id,
+                    valObj: valObj,
+                    storeName: Conf.statusStoreName,
+                    callback: callback
+                });
+            }
         },
         addDatas(datas, succCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
             datas = [].concat(datas);
@@ -93,40 +121,51 @@
             if ($.isEmptyObject(store))return;
             store.createIndex(name, key, options); // 创建状态索引，将数据对象中的某个字段作为该索引的键值
         },
-        getTodoDatas({
-            id, status, tags = [], callback = ()=> {
-        }
-        }){
-            let transaction = db.transaction(Conf.mainStoreName, 'readonly');
-            let store = transaction.objectStore(Conf.mainStoreName);
-            let request;
-            if ($.isNumeric(id)) {
-                request = store.get(id);
-                request.onsuccess = function (e) {
-                    callback(e.target.result);
-                };
-            } else if (typeof status === 'string') {
-                let index = store.index('status'), datas = [];
-                request = index.openCursor(IDBKeyRange.only(status))
-                request.onsuccess = function (e) {
-                    let cursor = e.target.result;
-                    if (cursor) {
-                        datas.push(cursor.value);
-                        cursor.continue();
+        getTodoDatas({id, status, tags = [], callback ,autoRender=true}){
+            if ($.isNumeric(id)) { // 如果指定id，忽略其他筛选条件，返回id指定数据
+                Db.getDataByPrimaryKey({key: id, callback: callback});
+            } else { // 没有指定id，则获取所有数据 进行条件筛选
+                Db.getAllData({
+                    callback: (datas)=> {
+                        datas = filte(datas);
+                        autoRender && Render.todoItems({datas: datas});
+                        callback && callback(datas);
                     }
-                };
-                callback(datas);
-            } else if ($.isArray(tags) && !$.isEmptyObject(tags)) {
-
-            } else {
-                request = store.getAll();
-                request.onsuccess = function (e) {
-                    callback(e.target.result);
-                };
+                })
             }
-        },
+
+            // 条件筛选
+            function filte(datas) {
+
+                // 状态筛选
+                if (typeof status === 'string' && status !== 'all') {
+                    let res = [];
+                    $.each(datas, (ind, data)=> {
+                        (data.status === status) && res.push(data);
+                    });
+                    datas = res;
+                }
+
+                // 标签筛选
+                if ($.isArray(tags) && !$.isEmptyObject(tags)) {
+                    let res = [];
+                    $.each(datas, (ind, data)=> {
+                        $.each(tags, (i, tag)=> {
+                            if ((data.tags || []).includes(tag)) {
+                                res.push(data);
+                                return false;
+                            }
+                        });
+                    });
+                    datas = res;
+                }
+
+                return datas;
+            }
+        }
     };
 
     window.Db = Db;
     exports.Db = Db;
-})();
+})
+();
