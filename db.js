@@ -97,13 +97,13 @@
                 });
             }
         },
-        addDatas(datas, succCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
+        addDatas(datas, eachCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
             datas = [].concat(datas);
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
 
             for (let i = 0, len = datas.length; i < len; i++) {
-                store.add(datas[i]).onsuccess = succCallback;
+                store.add(datas[i]).onsuccess = eachCallback;
             }
         },
         deleteDataByPrimaryKey({key, storeName = Conf.mainStoreName, db = Common.mainDB}){

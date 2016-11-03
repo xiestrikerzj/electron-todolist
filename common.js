@@ -50,14 +50,14 @@
         , filterUnfinishedBtn: '.btn.filter-unfinished'
         , filterFinishedBtn: '.btn.filter-finished'
         , tagFilterContainr: '.tagFilterContainr'
+        , tagFilterWayBtn: '.tagFilterWayBtn'
+        , clearTagFilterBtn: '.clearTagFilterBtn'
         , tagMenu: '#tagMenu'
         , tagMenuCrossline: '#tagMenuCrossline'
         , tagMenuItem: '.tagMenuItem'
         , tagFilterInput: '#tagFilterInput'
         , tagFilterDropdownBtn: '.tagFilterContainr #dropdownMenu'
         , tagFilterBtnGroup: '.tagFilterContainr #dropdownMenu'
-
-
     };
 
     window.Conf = {

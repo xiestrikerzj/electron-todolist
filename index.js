@@ -33,10 +33,10 @@
                             }
 
                             // 获取并渲染筛选后的todo数据
-                            Db.getTodoDatas({status:appStatus.statusFilter,tags:appStatus.tagsFilter});
+                            Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
 
                             // 渲染标签筛选菜单项
-                            Render.tagMenuItem({tags: appStatus.tags});
+                            Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
 
                             // 标签筛选输入框内容初始化
                             Common.$tagFilterInput.val(`标签:${appStatus.tagsFilter[0]}`);
@@ -44,7 +44,8 @@
                             // 点亮筛选按钮
                             $(`${Filter.filterBtn}[data-val="${appStatus.statusFilter}"]`).addClass('btn-primary');
 
-                            ((appStatus.tagsFilterStatus||"single") ==='single'?$(`${Filter.filterBtn}[data-val="${appStatus.statusFilter}"]`):$(`${Filter.filterBtn}[data-val="${appStatus.statusFilter}"]`)).addClass()
+                            // 隐藏当前的标签筛选方式按钮
+                            $(`${Filter.tagFilterWayBtn}[data-val="${(appStatus.tagsFilterWay || "single")}"]`).hide();
                         }
                     });
 

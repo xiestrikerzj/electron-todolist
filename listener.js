@@ -154,21 +154,13 @@
                         //let todos = [];
                         Common.$tagFilterInput.val(`标签:${thisVal}`); // 输入框显示为点击的按钮文案
 
-                        //Db.getDatasByIndex({
-                        //    indexName: Conf.mainIndexName, eachCallback: (data)=> {
-                        //        if ((data.tags || []).includes(thisVal)) {
-                        //            todos.push(data);
-                        //        }
-                        //        Common.$todolistContainer.html('');
-                        //    }, callback: ()=> {
-                        //        Render.todoItems({datas: todos})
-                        //    }
-                        //});
-
                         // 更新搜索状态和搜索按钮样式
                         Db.updateDataByIndex({
-                            valObj: {tagsFilter: [thisVal]}, callback: (data)=> {
-                                Db.getTodoDatas({status: data.statusFilter, tags: data.tagsFilter});
+                            valObj: {tagsFilter: [thisVal]}, callback: (appStatus)=> {
+                                Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
+
+                                // 渲染标签筛选菜单项
+                                Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
                             }
                         });
                     }
@@ -242,7 +234,7 @@
                                     Db.updateDataByIndex({
                                         valObj: {tags: tagList}
                                     });
-                                    Render.tagMenuItem({tags: Common.tagList});
+                                    Render.tagMenuItem({tags: Common.tagList,actTags:tagList});
                                 }
                                 break;
                         }

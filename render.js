@@ -112,8 +112,9 @@
             otherTagsHtml += Temp.todoBtns()['newTag'];
             return `${myTagsHtml}<div class="crossLine"></div>${otherTagsHtml}`;
         },
-        tagMenuItem({cont = ''}){
-            return `<li role="presentation" class="tagMenuItem" data-val="${cont}"><a role="menuitem" tabindex="-1" href="#">${cont}</a></li>`;
+        tagMenuItem({cont = '',isAct=false}){
+            let icon = isAct?Temp.iconBtn({icon:'leaf',style:'default',css:'float: right; border: 0; padding: 0;'}):'';
+            return `<li role="presentation" class="tagMenuItem" data-val="${cont}"><a role="menuitem" tabindex="-1" href="#">${cont}${icon}</a></li>`;
         },
     };
 
@@ -146,10 +147,11 @@
                 }
             });
         },
-        tagMenuItem({tags = []}){
-            let tagHtml = '';
+        tagMenuItem({tags = [],actTags=[]}){
+            let tagHtml = '', isAct;
             $.map(tags, (item)=> {
-                tagHtml += Temp.tagMenuItem({cont: item});
+                actTags.includes(item) ? isAct = true : isAct = false;
+                tagHtml += Temp.tagMenuItem({cont: item, isAct: isAct});
             });
             if (tagHtml !== '') {
                 $(Filter.tagMenuItem).remove();
