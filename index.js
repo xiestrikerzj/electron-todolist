@@ -39,7 +39,7 @@
                             Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
 
                             // 标签筛选输入框内容初始化
-                            Common.$tagFilterInput.val(`标签:${appStatus.tagsFilter[0]}`);
+                            Common.$tagFilterInput.val(`标签:${($.isEmptyObject(appStatus.tagsFilter)?["所有"]:appStatus.tagsFilter).join(',')}`);
 
                             // 点亮筛选按钮
                             $(`${Filter.filterBtn}[data-val="${appStatus.statusFilter}"]`).addClass('btn-primary');

@@ -15,37 +15,38 @@
     </span>
 </div>
 
-    <ul class="list-group todolistContainer" style="padding: 0;"></ul>
+<ul class="list-group todolistContainer" style="padding: 0;"></ul>
 
 <div class="filterContainer">
-    <div class="input-group">
-        <input type="text" class="form-control" id="tagFilterInput" placeholder="标签筛选">
-        <div class="input-group-btn dropdown tagFilterContainr">
-            <!--<div class="dropdown tagFilterContainr">-->
-            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown">
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-right" id="tagMenu1" role="menu" aria-labelledby="dropdownMenu">
-                <li role="presentation" style="padding: 0 5%;" id="tagFilterBtnGroupContainer">
-                    <div class="btn-group tagFilterBtnGroup" style="width: 100%;">
-                        <button type="button" class="btn btn-default tagFilterWayBtn" data-val="single">单选</button>
-                        <button type="button" class="btn btn-default clearTagFilterBtn" data-val="clear">清除</button>
-                        <button type="button" class="btn btn-default tagFilterWayBtn" data-val="multi">多选</button>
-                    </div>
-                </li>
-                <li role="presentation" class="divider" id="tagMenuCrossline"></li>
-                <!--标签列表项占位，用于初始化时替换，不要删-->
-                <li role="presentation" class="tagMenuItem"><a role="menuitem" tabindex="-1" href="#">没有标签</a></li>
-            </ul>
-            <!--</div>-->
-        </div>
-    </div>
-
     <div class="btn-group-vertical fr filterBox" style="padding: 0;">
         <button type="button" data-val="all" class="btn btn-default filter-all filter">所有</button>
         <button type="button" data-val="unfinished" class="btn btn-default filter-unfinished filter">未完成</button>
         <button type="button" data-val="finished" class="btn btn-default filter-finished filter">已完成</button>
     </div>
+
+    <!--<div class="input-group">-->
+    <!--<div class="input-group-btn dropdown tagFilterContainer">-->
+    <!--&lt;!&ndash;<div class="dropdown tagFilterContainer">&ndash;&gt;-->
+    <!--<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown">-->
+    <!--<span class="caret"></span>-->
+    <!--</button>-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--</div>-->
+    <!--</div>-->
+    <ul class="dropdown-menu tagFilterContainer" id="tagMenu1">
+        <input type="text" class="form-control" id="tagFilterInput" placeholder="标签筛选">
+        <li role="presentation" id="tagFilterBtnGroupContainer">
+            <div class="btn-group tagFilterBtnGroup" style="width: 100%;">
+                <button type="button" class="btn btn-default tagFilterWayBtn" data-val="single">单选</button>
+                <button type="button" class="btn btn-default tagFilterWayBtn" data-val="all">全选</button>
+                <button type="button" class="btn btn-default tagFilterWayBtn" data-val="multi">多选</button>
+            </div>
+        </li>
+        <li role="presentation" class="divider" id="tagMenuCrossline"></li>
+        <!--标签列表项占位，用于初始化时替换，不要删-->
+        <li role="presentation" class="tagMenuItem"><a role="menuitem" tabindex="-1" href="#">没有标签</a></li>
+    </ul>
+
 </div>
 
 <div class="tagBoxContainer"></div>

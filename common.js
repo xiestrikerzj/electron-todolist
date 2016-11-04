@@ -49,15 +49,19 @@
         , filterAllBtn: '.btn.filter-all'
         , filterUnfinishedBtn: '.btn.filter-unfinished'
         , filterFinishedBtn: '.btn.filter-finished'
-        , tagFilterContainr: '.tagFilterContainr'
+        , tagFilterContainer: '.tagFilterContainer'
         , tagFilterWayBtn: '.tagFilterWayBtn'
         , clearTagFilterBtn: '.clearTagFilterBtn'
         , tagMenu: '#tagMenu'
         , tagMenuCrossline: '#tagMenuCrossline'
         , tagMenuItem: '.tagMenuItem'
         , tagFilterInput: '#tagFilterInput'
-        , tagFilterDropdownBtn: '.tagFilterContainr #dropdownMenu'
-        , tagFilterBtnGroup: '.tagFilterContainr #dropdownMenu'
+        , tagFilterDropdownBtn: '.tagFilterContainer #dropdownMenu'
+        , tagFilterWayBtnGroup: '#tagFilterBtnGroupContainer .tagFilterBtnGroup'
+        , tagFilterWayBtn: '.tagFilterWayBtn'
+        , tagFilterAllBtn: '.tagFilterWayBtn[data-val="all"]'
+        , tagFilterSingleBtn: '.tagFilterWayBtn[data-val="single"]'
+        , tagFilterMultiBtn: '.tagFilterWayBtn[data-val="multi"]'
     };
 
     window.Conf = {

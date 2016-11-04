@@ -26,6 +26,11 @@
     width: 100%;
 }
 
+.filterBox,.tagFilterContainer{
+    /*box-shadow: 0 2px 4px rgba(0,0,0,.175);*/
+    box-shadow: none;
+}
+
 .filter{
 
 }
@@ -37,8 +42,7 @@
     margin-top: 2px;
 }
 .tagFilterBtnGroup button{
-    width: 50%;
-    border-radius: 0;
+    /*width: 50%;*/
 }
 .tagFilterBtn{
     border-radius:0;
@@ -83,14 +87,34 @@
 }
 
 /*标签筛选栏*/
-.tagFilterContainr {
-    padding-left: 0;
+.tagFilterContainer {
+    display: block;
+    position: initial;
+    width: 100%;
+    margin-top: 10px;
+    /*border-top: 0;*/
+    border-radius: 4px;
+    padding-top: 0;
 }
-
+#tagFilterBtnGroupContainer{
+    border: 0;
+    padding: 0;
+}
+.tagFilterWayBtn{
+    border-radius: 0;
+    width: 50%;
+}
+.btn-group>.tagFilterWayBtn:first-child:not(:last-child){
+    border-left: 0;
+}
+.btn-group>.tagFilterWayBtn:last-child:not(:first-child){
+    border-right: 0;
+}
+#tagMenuCrossline{
+    display: none;
+}
 #tagFilterInput {
     /*width: 90%;*/
-}
-
-.tagFilterBtn {
-    width: 50%;
+    /*border-radius: 4px 4px 0 0;*/
+    border:0;
 }

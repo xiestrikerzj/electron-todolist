@@ -86,7 +86,7 @@
         tag({cont = "+", style = 'default', css = "", className = ""}){
             return `<div class="todoTag label label-${style} ${className}" style="${css}" data-val="${cont}">${cont}</div>`;
         },
-        tagsBox({myTags = [],allTags=[]}) {
+        tagsBox({myTags = [], allTags = []}) {
             let myTagsHtml = "", otherTagsHtml = "";
             $.map(myTags, (item)=> {
                 allTags.includes(item) && (myTagsHtml += Temp.tag({
@@ -112,14 +112,21 @@
             otherTagsHtml += Temp.todoBtns()['newTag'];
             return `${myTagsHtml}<div class="crossLine"></div>${otherTagsHtml}`;
         },
-        tagMenuItem({cont = '',isAct=false}){
-            let icon = isAct?Temp.iconBtn({icon:'leaf',style:'default',css:'float: right; border: 0; padding: 0;'}):'';
+        tagMenuItem({cont = '', isAct = false}){
+            let icon = isAct ? Temp.iconBtn({
+                icon: 'leaf',
+                style: 'default',
+                css: 'float: right; border: 0; padding: 0;'
+            }) : '';
             return `<li role="presentation" class="tagMenuItem" data-val="${cont}"><a role="menuitem" tabindex="-1" href="#">${cont}${icon}</a></li>`;
+        },
+        tagFilterBtn({text = '', dataVal = ''}){
+            return `<button type="button" class="btn btn-default tagFilterWayBtn" data-val="${dataVal}">${text}</button>`;
         },
     };
 
     let Render = {
-        todoItems({datas = datas,prepend=false, $container = Common.$todolistContainer}){
+        todoItems({datas = datas, prepend = false, $container = Common.$todolistContainer}){
             datas = [].concat(datas);
             let html = '';
             $.map(datas, (data)=> {
@@ -139,7 +146,7 @@
         updateTodoItem($item, data){
             $item.replaceWith(Temp.todoItem(data));
         },
-        tagsBox({tags=[],$container=$('body')}){
+        tagsBox({tags = [], $container = $('body')}){
             Db.getDataByIndex({
                 callback: (data)=> {
                     let allTags = data.tags;
@@ -147,8 +154,11 @@
                 }
             });
         },
-        tagMenuItem({tags = [],actTags=[]}){
+        tagMenuItem({tags = [], actTags = []}){
             let tagHtml = '', isAct;
+
+            // 如果没有选中的标签筛选项，则默认选中所有筛选项，通知显示所有待办项
+            actTags = $.isEmptyObject(actTags) ? tags : actTags;
             $.map(tags, (item)=> {
                 actTags.includes(item) ? isAct = true : isAct = false;
                 tagHtml += Temp.tagMenuItem({cont: item, isAct: isAct});
@@ -157,8 +167,15 @@
                 $(Filter.tagMenuItem).remove();
                 Common.$tagMenuCrossline.after(tagHtml);
             }
-
+        },
+        tagFilterBtns({showBtn = 'multi'}){
+            let btnHtml =
+                `${showBtn === 'single' ? Temp.tagFilterBtn({text: '单选', dataVal: 'single'}) :
+                    Temp.tagFilterBtn({text: '多选', dataVal: 'multi'})}
+                    ${Temp.tagFilterBtn({text: '全部', dataVal: 'all'})}`;
+            $(Filter.tagFilterWayBtnGroup).html(btnHtml);
         }
+
     };
 
     window.Temp = Temp;

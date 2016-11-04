@@ -145,7 +145,7 @@
                         $this.replaceWith($thisInput);
                         $thisInput.focus();
                     },
-                    [Filter.tagFilterContainr](e){
+                    [Filter.tagFilterContainer](e){
                         $(this).toggleClass('open');
                     },
                     [Filter.tagMenuItem](e){
@@ -163,7 +163,28 @@
                                 Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
                             }
                         });
-                    }
+                    },
+                    [Filter.tagFilterAllBtn](e){
+                        Common.$tagFilterInput.val('标签:所有');
+                        Db.updateDataByIndex({
+                            valObj: {tagsFilter:[]},
+                            callback: (data)=> {
+                                Render.tagMenuItem({tags: data.tags, actTags: data.tags})
+                                Db.getTodoDatas({status:data.statusFilter,tags:data.tagsFilter});
+                            }
+                        });
+                    },
+                    [Filter.tagFilterWayBtn](e){
+                        let $this=$(this),
+                            thisVal =$this.data('val');
+                        //start whit this
+                        Render.tagFilterBtns({showBtn:'multi'});
+                        Db.updateDataByIndex({tagsFilterStatus:'multi'});
+                    },
+                    [Filter.tagFilterSingleBtn](e){
+                        let $this=$(this);
+                        Render.tagFilterBtns({showBtn:'single'});
+                    },
                 },
                 "dblclick": {
                     [Filter.todoItemBtnGroup](e){
@@ -234,7 +255,7 @@
                                     Db.updateDataByIndex({
                                         valObj: {tags: tagList}
                                     });
-                                    Render.tagMenuItem({tags: Common.tagList,actTags:tagList});
+                                    Render.tagMenuItem({tags: Common.tagList, actTags: tagList});
                                 }
                                 break;
                         }
@@ -292,7 +313,7 @@
         },
 
         // 更新數據庫&&重繪待辦
-        updateTodoItemWithEvent({event, valObj,callback,isDeepExtend=false}){
+        updateTodoItemWithEvent({event, valObj, callback, isDeepExtend = false}){
             let it = fn.getTodoItemWithEvent(event);
             Db.updateDataByPrimaryKey({
                 key: it.itemId, valObj: valObj, isDeepExtend: isDeepExtend, callback: (data)=> {
