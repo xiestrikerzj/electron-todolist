@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+<<<<<<< 5ecaf915a94dbcdc1ab33a623b7e53377293ceea
     <list default="true" id="c08b9bae-2014-401b-8a6e-09956681aa64" name="Default" comment="Kh">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
@@ -12,6 +13,9 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/listener.js" afterPath="$PROJECT_DIR$/listener.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/render.js" afterPath="$PROJECT_DIR$/render.js" />
     </list>
+=======
+    <list default="true" id="c08b9bae-2014-401b-8a6e-09956681aa64" name="Default" comment="Kh" />
+>>>>>>> 4 pull
     <ignored path="electron-todolist.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
@@ -102,11 +106,17 @@
       <file leaf-file-name="common.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common.js">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< 5ecaf915a94dbcdc1ab33a623b7e53377293ceea
             <state relative-caret-position="437">
               <caret line="60" column="44" selection-start-line="60" selection-start-column="44" selection-end-line="60" selection-end-column="44" />
               <folding>
                 <element signature="e#0#43#0" expanded="false" />
               </folding>
+=======
+            <state vertical-scroll-proportion="0.164076">
+              <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+              <folding />
+>>>>>>> 4 pull
             </state>
           </provider>
         </entry>
@@ -692,14 +702,22 @@
       <workItem from="1477970231661" duration="22997000" />
       <workItem from="1478056437040" duration="15872000" />
       <workItem from="1478160352085" duration="221000" />
+<<<<<<< 5ecaf915a94dbcdc1ab33a623b7e53377293ceea
       <workItem from="1478166803824" duration="3257000" />
       <workItem from="1478175444730" duration="5339000" />
       <workItem from="1478186868878" duration="2740000" />
+=======
+      <workItem from="1478166803824" duration="3463000" />
+>>>>>>> 4 pull
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
+<<<<<<< 5ecaf915a94dbcdc1ab33a623b7e53377293ceea
     <option name="totallyTimeSpent" value="59942000" />
+=======
+    <option name="totallyTimeSpent" value="52069000" />
+>>>>>>> 4 pull
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
@@ -1190,8 +1208,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/listener.js">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< 5ecaf915a94dbcdc1ab33a623b7e53377293ceea
         <state relative-caret-position="475">
           <caret line="184" column="41" selection-start-line="184" selection-start-column="41" selection-end-line="184" selection-end-column="41" />
+=======
+        <state vertical-scroll-proportion="0.0">
+          <caret line="161" column="43" selection-start-line="161" selection-start-column="43" selection-end-line="161" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.164076">
+          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+>>>>>>> 4 pull
           <folding />
         </state>
       </provider>
