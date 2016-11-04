@@ -24,28 +24,14 @@
         <button type="button" data-val="finished" class="btn btn-default filter-finished filter">已完成</button>
     </div>
 
-    <!--<div class="input-group">-->
-    <!--<div class="input-group-btn dropdown tagFilterContainer">-->
-    <!--&lt;!&ndash;<div class="dropdown tagFilterContainer">&ndash;&gt;-->
-    <!--<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown">-->
-    <!--<span class="caret"></span>-->
-    <!--</button>-->
-    <!--&lt;!&ndash;</div>&ndash;&gt;-->
-    <!--</div>-->
-    <!--</div>-->
-    <ul class="dropdown-menu tagFilterContainer" id="tagMenu1">
+    <div class="tagFilterContainer fr">
         <input type="text" class="form-control" id="tagFilterInput" placeholder="标签筛选">
-        <li role="presentation" id="tagFilterBtnGroupContainer">
+        <div role="presentation" id="tagFilterBtnGroupContainer">
             <div class="btn-group tagFilterBtnGroup" style="width: 100%;">
-                <button type="button" class="btn btn-default tagFilterWayBtn" data-val="single">单选</button>
-                <button type="button" class="btn btn-default tagFilterWayBtn" data-val="all">全选</button>
-                <button type="button" class="btn btn-default tagFilterWayBtn" data-val="multi">多选</button>
             </div>
-        </li>
-        <li role="presentation" class="divider" id="tagMenuCrossline"></li>
-        <!--标签列表项占位，用于初始化时替换，不要删-->
-        <li role="presentation" class="tagMenuItem"><a role="menuitem" tabindex="-1" href="#">没有标签</a></li>
-    </ul>
+        </div>
+        <ul class="dropdown-menu tagMenuContainer" id="tagMenu1"></ul>
+    </div>
 
 </div>
 

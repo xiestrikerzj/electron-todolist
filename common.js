@@ -13,12 +13,11 @@
             console.log.apply(this, Array.prototype.slice.call(arguments));
         }
     };
-    window.l = (...params)=>{
+    window.l = (...params)=> {
         console.log(...params);
     }
 
-    window.Common={
-    };
+    window.Common = {};
 
     window.Filter = {
         window: 'window',
@@ -58,24 +57,22 @@
         , tagFilterInput: '#tagFilterInput'
         , tagFilterDropdownBtn: '.tagFilterContainer #dropdownMenu'
         , tagFilterWayBtnGroup: '#tagFilterBtnGroupContainer .tagFilterBtnGroup'
+        , tagMenuContainer: '.tagMenuContainer'
         , tagFilterWayBtn: '.tagFilterWayBtn'
-        , tagFilterAllBtn: '.tagFilterWayBtn[data-val="all"]'
-        , tagFilterSingleBtn: '.tagFilterWayBtn[data-val="single"]'
-        , tagFilterMultiBtn: '.tagFilterWayBtn[data-val="multi"]'
     };
 
     window.Conf = {
         mainDBName: 'todolistDB',
         mainStoreName: 'todolistStore',
         statusStoreName: 'statusStore',
-        mainIndexName:'statusIndex',
-        statusIndexName:'flagIndex',
-        noTagTxt:'无标签',
+        mainIndexName: 'statusIndex',
+        statusIndexName: 'flagIndex',
+        noTagTxt: '无标签',
         newTodoItemForm(){
             return {
-                timeStamp: (new Date()).getTime()
+                initTime: (new Date()).getTime()
                 , status: Conf.todoStatusMap[0] // unfinished
-                , tags: []
+                , tags: [Conf.noTagTxt]
             }
         },
         todoStatusMap: ['unfinished', 'finished', 'delay', 'abort'],

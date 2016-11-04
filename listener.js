@@ -78,7 +78,8 @@
                         let it = fn.getTodoItemWithEvent(e);
                         fn.updateTodoItemWithEvent({
                             event: e, valObj: {
-                                cont: it.itemInputText
+                                cont: it.itemInputText,
+                                updateTime:(new Date()).getTime()
                             }
                         });
                     },
@@ -125,6 +126,7 @@
                             thisTodoTags = $thisTodo.data('tags'),
                             thisValInd = thisTodoTags.indexOf(thisVal);
                         thisTodoTags.splice(thisValInd, 1);
+                        (thisTodoTags.length === 0) && thisTodoTags.push(Conf.noTagTxt); // 如果删除标签后待办项没标签了，补上“无标签”标签
                         fn.updateTodoItemWithEvent({event: e, valObj: {tags: thisTodoTags}}); // 更新數據庫&&重繪待辦
                     },
                     [Filter.otherTag](e){
@@ -133,6 +135,7 @@
                             thisVal = String($this.data('val')),
                             thisTodoTags = $thisTodo.data('tags');
                         thisTodoTags.push(thisVal);
+                        thisTodoTags.includes(Conf.noTagTxt) && thisTodoTags.splice(thisTodoTags.indexOf(Conf.noTagTxt), 1); // 如果待办项没标签，加上标签后去掉“无标签”标签
                         fn.updateTodoItemWithEvent({event: e, valObj: {tags: thisTodoTags}}); // 更新數據庫&&重繪待辦
                     },
                     [Filter.newTagBtn](e){
@@ -150,40 +153,51 @@
                     },
                     [Filter.tagMenuItem](e){
                         let $this = $(this),
-                            thisVal = String($this.data('val'));
-                        //let todos = [];
-                        Common.$tagFilterInput.val(`标签:${thisVal}`); // 输入框显示为点击的按钮文案
+                            thisVal = String($this.data('val')),
+                            tagsFilter;
+                        Db.getDataByIndex({
+                            callback: data=> {
+                                if (data.tagsFilterWay === 'multi') {
+                                    tagsFilter = data.tagsFilter;
+                                    if (tagsFilter.includes(thisVal) && tagsFilter.length > 1) {
+                                        tagsFilter.splice(tagsFilter.indexOf(thisVal), 1);
+                                    } else if (!tagsFilter.includes(thisVal)) {
+                                        tagsFilter.push(thisVal);
+                                    }
+                                } else {
+                                    tagsFilter = [thisVal];
+                                }
 
-                        // 更新搜索状态和搜索按钮样式
-                        Db.updateDataByIndex({
-                            valObj: {tagsFilter: [thisVal]}, callback: (appStatus)=> {
-                                Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
+                                Common.$tagFilterInput.val(`标签:${tagsFilter.join(',')}`); // 输入框显示为点击的按钮文案
 
-                                // 渲染标签筛选菜单项
-                                Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
-                            }
-                        });
-                    },
-                    [Filter.tagFilterAllBtn](e){
-                        Common.$tagFilterInput.val('标签:所有');
-                        Db.updateDataByIndex({
-                            valObj: {tagsFilter:[]},
-                            callback: (data)=> {
-                                Render.tagMenuItem({tags: data.tags, actTags: data.tags})
-                                Db.getTodoDatas({status:data.statusFilter,tags:data.tagsFilter});
+                                // 更新搜索状态和搜索按钮样式
+                                Db.updateDataByIndex({
+                                    valObj: {tagsFilter: tagsFilter}, callback: (appStatus)=> {
+                                        Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
+
+                                        // 渲染标签筛选菜单项
+                                        Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
+                                    }
+                                });
                             }
                         });
                     },
                     [Filter.tagFilterWayBtn](e){
-                        let $this=$(this),
-                            thisVal =$this.data('val');
-                        //start whit this
-                        Render.tagFilterBtns({showBtn:'multi'});
-                        Db.updateDataByIndex({tagsFilterStatus:'multi'});
-                    },
-                    [Filter.tagFilterSingleBtn](e){
-                        let $this=$(this);
-                        Render.tagFilterBtns({showBtn:'single'});
+                        let $this = $(this),
+                            thisVal = $this.data('val') || 'single';
+                        if (thisVal === 'all') {
+                            Common.$tagFilterInput.val('标签:所有');
+                            Db.updateDataByIndex({
+                                valObj: {tagsFilter: []},
+                                callback: (data)=> {
+                                    Render.tagMenuItem({tags: data.tags, actTags: data.tags})
+                                    Db.getTodoDatas({status: data.statusFilter, tags: data.tagsFilter});
+                                }
+                            });
+                        } else {
+                            Render.tagFilterWayBtns({hideBtn: thisVal});
+                            Db.updateDataByIndex({valObj: {tagsFilterWay: thisVal}});
+                        }
                     },
                 },
                 "dblclick": {
@@ -237,28 +251,33 @@
                         }
                     },
                     [Filter.newTagInput](e){
-                        var $this = $(this), tagList = Common.tagList;
-                        switch (e.keyCode) {
-                            case 13: // enter
-                                var val = $this.val();
-                                if (tagList.includes(val)) {
-                                    alert('该标签已存在');
-                                } else if (val.length === 0) {
-                                    alert('请输入标签名');
-                                } else if (val.length > 6) {
-                                    alert('标签太长');
-                                } else {
-                                    tagList.push(String(val));
-                                    var $tag = $(Temp.tag({cont: val, className: 'otherTag'}));
-                                    $this.before($tag);
-                                    $tag.click();
-                                    Db.updateDataByIndex({
-                                        valObj: {tags: tagList}
-                                    });
-                                    Render.tagMenuItem({tags: Common.tagList, actTags: tagList});
+                        Db.getDataByIndex({
+                            callback: data=> {
+                                var $this = $(this), tagList = data.tags;
+                                switch (e.keyCode) {
+                                    case 13: // enter
+                                        var val = $this.val();
+                                        if (tagList.includes(val)) {
+                                            alert('该标签已存在');
+                                        } else if (val.length === 0) {
+                                            alert('请输入标签名');
+                                        } else if (val.length > 6) {
+                                            alert('标签太长');
+                                        } else {
+                                            tagList.push(String(val));
+                                            //tagList.includes(Conf.noTagTxt) && tagList.splice(tagList.indexOf(Conf.noTagTxt), 1); // 如果待办项没标签，加上标签后去掉“无标签”标签
+                                            var $tag = $(Temp.tag({cont: val, className: 'otherTag'}));
+                                            $this.before($tag);
+                                            $tag.click();
+                                            Db.updateDataByIndex({
+                                                valObj: {tags: tagList}
+                                            });
+                                            Render.tagMenuItem({tags: tagList, actTags: data.tagsFilter});
+                                        }
+                                        break;
                                 }
-                                break;
-                        }
+                            }
+                        });
                     }
                 },
                 "focus": {
@@ -270,8 +289,8 @@
 
                     // 当修改代办项的输入框失去焦点时，默认用修改后的内容替换原内容，并隐藏编辑框
                     [Filter.todoItemInput](e){
-                        //let it = fn.getTodoItemWithEvent(e);
-                        //it.$thisItem.find(Filter.itemModifyDoneBtn).click();
+                        let it = fn.getTodoItemWithEvent(e);
+                        it.$thisItem.find(Filter.itemModifyDoneBtn).click();
 
                         // 待办项编辑选项失去焦点时，自动给新建待办项输入框加上焦点
                         Common.$newTodoInput.focus();

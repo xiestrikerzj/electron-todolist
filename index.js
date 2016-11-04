@@ -25,6 +25,9 @@
                             if (!appStatus) {
                                 appStatus = {
                                     flag: 'main',
+                                    statusFilter:'all',
+                                    tags:[Conf.noTagTxt],
+                                    tagsFilter: [],
                                     initTime: (new Date()).getTime()
                                 };
                                 Db.addDatas(appStatus, function (e) {
@@ -36,16 +39,17 @@
                             Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
 
                             // 渲染标签筛选菜单项
-                            Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
+                            Render.tagMenuItem({tags: appStatus.tags, actTags: []});
 
                             // 标签筛选输入框内容初始化
-                            Common.$tagFilterInput.val(`标签:${($.isEmptyObject(appStatus.tagsFilter)?["所有"]:appStatus.tagsFilter).join(',')}`);
+                            Common.$tagFilterInput.val(`标签:${($.isEmptyObject(appStatus.tagsFilter) ? ["所有"] : appStatus.tagsFilter).join(',')}`);
 
                             // 点亮筛选按钮
                             $(`${Filter.filterBtn}[data-val="${appStatus.statusFilter}"]`).addClass('btn-primary');
 
+
                             // 隐藏当前的标签筛选方式按钮
-                            $(`${Filter.tagFilterWayBtn}[data-val="${(appStatus.tagsFilterWay || "single")}"]`).hide();
+                            Render.tagFilterWayBtns({hideBtn: appStatus.tagsFilterWay || 'single'});
                         }
                     });
 

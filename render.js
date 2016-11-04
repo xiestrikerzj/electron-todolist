@@ -88,6 +88,9 @@
         },
         tagsBox({myTags = [], allTags = []}) {
             let myTagsHtml = "", otherTagsHtml = "";
+            if (allTags.length > 1 && allTags.includes(Conf.noTagTxt)) {
+                allTags.splice(allTags.indexOf(Conf.noTagTxt), 1);
+            }
             $.map(myTags, (item)=> {
                 allTags.includes(item) && (myTagsHtml += Temp.tag({
                     cont: item,
@@ -103,7 +106,7 @@
 
             // 如果待办项沒有标签，加上默认标签
             myTagsHtml === "" && (myTagsHtml = Temp.tag({
-                cont: "点灰色按钮添加标签",
+                cont: "无标签",
                 className: 'noTag',
                 style: 'primary'
             }));
@@ -120,13 +123,13 @@
             }) : '';
             return `<li role="presentation" class="tagMenuItem" data-val="${cont}"><a role="menuitem" tabindex="-1" href="#">${cont}${icon}</a></li>`;
         },
-        tagFilterBtn({text = '', dataVal = ''}){
+        tagFilterWayBtn({text = '', dataVal = ''}){
             return `<button type="button" class="btn btn-default tagFilterWayBtn" data-val="${dataVal}">${text}</button>`;
         },
     };
 
     let Render = {
-        todoItems({datas = datas, prepend = false, $container = Common.$todolistContainer}){
+        todoItems({datas, showDate=false, prepend = false, $container = Common.$todolistContainer}){
             datas = [].concat(datas);
             let html = '';
             $.map(datas, (data)=> {
@@ -156,23 +159,21 @@
         },
         tagMenuItem({tags = [], actTags = []}){
             let tagHtml = '', isAct;
+            //tags.unshift(Conf.noTagTxt);
 
-            // 如果没有选中的标签筛选项，则默认选中所有筛选项，通知显示所有待办项
+            // 如果没有选中的标签筛选项，则默认选中所有筛选项
             actTags = $.isEmptyObject(actTags) ? tags : actTags;
             $.map(tags, (item)=> {
                 actTags.includes(item) ? isAct = true : isAct = false;
                 tagHtml += Temp.tagMenuItem({cont: item, isAct: isAct});
             });
-            if (tagHtml !== '') {
-                $(Filter.tagMenuItem).remove();
-                Common.$tagMenuCrossline.after(tagHtml);
-            }
+            Common.$tagMenuContainer.html(tagHtml);
         },
-        tagFilterBtns({showBtn = 'multi'}){
+        tagFilterWayBtns({hideBtn = 'multi'}){
             let btnHtml =
-                `${showBtn === 'single' ? Temp.tagFilterBtn({text: '单选', dataVal: 'single'}) :
-                    Temp.tagFilterBtn({text: '多选', dataVal: 'multi'})}
-                    ${Temp.tagFilterBtn({text: '全部', dataVal: 'all'})}`;
+                `${hideBtn !== 'single' ? Temp.tagFilterWayBtn({text: '单选', dataVal: 'single'}) :
+                    Temp.tagFilterWayBtn({text: '多选', dataVal: 'multi'})}
+                    ${Temp.tagFilterWayBtn({text: '全部', dataVal: 'all'})}`;
             $(Filter.tagFilterWayBtnGroup).html(btnHtml);
         }
 

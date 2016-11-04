@@ -41,7 +41,7 @@
             var store = transaction.objectStore(storeName);
             var ind = store.index(indexName);
             ind.get(index).onsuccess = (e) => {
-                callback && callback(e.target.result);
+                callback && callback(e.target.result, e);
             }
         },
         getDatasByIndex({IDBKeyRange, callback, eachCallback, indexName = Conf.mainIndexName, storeName = Conf.mainStoreName, db = Common.mainDB}){

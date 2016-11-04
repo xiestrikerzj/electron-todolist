@@ -20,6 +20,7 @@
 .filterContainer{
     width: 20%;
     float: right;
+    margin-top: 10px;
 }
 
 .filterBox{
@@ -95,10 +96,12 @@
     /*border-top: 0;*/
     border-radius: 4px;
     padding-top: 0;
+    border: 1px solid #cccccc;
 }
 #tagFilterBtnGroupContainer{
     border: 0;
     padding: 0;
+    margin-bottom: 5px;
 }
 .tagFilterWayBtn{
     border-radius: 0;
@@ -109,6 +112,13 @@
 }
 .btn-group>.tagFilterWayBtn:last-child:not(:first-child){
     border-right: 0;
+}
+.tagMenuContainer{
+    position: initial;
+    width: 100%;
+    display: block;
+    box-shadow: none;
+    border: 0;
 }
 #tagMenuCrossline{
     display: none;
