@@ -45,9 +45,6 @@
         , newTagInput: 'input.newTagInput'
         , todoItemInput: '.todoItemInput'
         , filterBtn: '.btn.filter'
-        , filterAllBtn: '.btn.filter-all'
-        , filterUnfinishedBtn: '.btn.filter-unfinished'
-        , filterFinishedBtn: '.btn.filter-finished'
         , tagFilterContainer: '.tagFilterContainer'
         , tagFilterWayBtn: '.tagFilterWayBtn'
         , clearTagFilterBtn: '.clearTagFilterBtn'
@@ -75,6 +72,6 @@
                 , tags: [Conf.noTagTxt]
             }
         },
-        todoStatusMap: ['unfinished', 'finished', 'delay', 'abort'],
+        todoStatusMap: ['unfinished', 'finished', 'delay', 'abort', 'deleted'],
     };
 })();

@@ -2,10 +2,55 @@
  * Created by Striker on 2016/9/24.
  */
 
+let fs = require('fs');
+
+// fs.readFile('./electron/todolist/databak.json', "utf8", function (error, data) {
+//     if (error) throw error;
+//     console.log(data);
+// });
+
+window.readFileThunk = thunkify(fs.readFile);
+window.writeFileThunk = thunkify(fs.writeFile);
+window.test = thunkify(window.indexedDB.open);
+readFileThunk('./electron/todolist/databak.json', 'utf8')((err, data)=> {
+    l(JSON.parse(data).test)
+});
+writeFileThunk('./electron/todolist/databak.json', '{"tt":1}')((err)=> {
+    l(1, err)
+});
+// test('testDb', 1)((e)=> {
+//     // l(e)
+//     console.log(e)
+// });
+
+function* openDB ({name, version = 1, onsuccess, onupgradeneeded, onerror}) {
+    let request = window.indexedDB.open(name, version);
+    request.onerror = onerror;
+    request.onsuccess = (e)=> {
+        // yield 'test';
+    };
+    request.onupgradeneeded = onupgradeneeded;
+    yield 2;
+}
+
+co(function* (){
+    var data1 = yield readFileThunk('./electron/todolist/databak.json');
+    console.log(data1);
+    var data2 = yield readFileThunk('./electron/todolist/file.js');
+    console.log(data2);
+})
+// let op = openDB({name: 'testDb'});
+// l(op.next());
+
+// fs.state('./electron/todolist/databak.json')
+
+co()
+
 (()=> {
     let Temp = require('./render.js').Temp;
     let Render = require('./render.js').Render;
     let Db = require('./db.js').Db;
+    let thunkify = require('thunkify');
 
     let fn = {
         startListener(listenerMap){
@@ -31,6 +76,7 @@
                     [Filter.newTodoBtn](){ // 元素筛选器和处理函数，下同
                         let newTodoCont = Common.$newTodoInput.val();
                         if (newTodoCont !== "") {
+                            let contList = newTodoCont.split(/\n/);
                             let targData = $.extend(true, {}, Conf.newTodoItemForm(), {cont: newTodoCont});
                             Db.addDatas(targData, (e)=> {
                                 let dataInd = e.target.result;
@@ -60,9 +106,15 @@
                         });
                     },
                     [Filter.deleteItemBtn](e){
-                        let it = fn.getTodoItemWithEvent(e);
-                        Db.deleteDataByPrimaryKey({key: it.itemId});
-                        Render.updateTodoItem(it.$thisItem, {});
+                        fn.updateTodoItemWithEvent({
+                            event: e, valObj: {
+                                status: "deleted"
+                            }, callback: (data)=> {
+                                let dataCont = data.cont;
+                                let $thisTodo = $(`${Filter.todoItem}[data-cont="${dataCont}"]`);
+                                $thisTodo.remove();
+                            }
+                        });
                     },
                     [Filter.modifyItemBtn](e){
                         let it = fn.getTodoItemWithEvent(e);
@@ -79,22 +131,14 @@
                         fn.updateTodoItemWithEvent({
                             event: e, valObj: {
                                 cont: it.itemInputText,
-                                updateTime:(new Date()).getTime()
+                                updateTime: (new Date()).getTime()
                             }
                         });
                     },
                     [Filter.filterBtn](e){
                         let $this = $(this);
-                        let filterMap = {all: "all", finished: 'finished', unfinished: 'unfinished'};
-                        let filterKey;
+                        let filterKey = $this.data('val');
                         $this.addClass('btn-primary').siblings().removeClass('btn-primary');
-
-                        // 获取筛选值
-                        $.map(filterMap, (item, key)=> {
-                            if ($this.hasClass('filter-' + item)) {
-                                filterKey = key;
-                            }
-                        });
 
                         // 更新搜索状态和搜索按钮样式
                         Db.updateDataByIndex({
@@ -335,7 +379,10 @@
         updateTodoItemWithEvent({event, valObj, callback, isDeepExtend = false}){
             let it = fn.getTodoItemWithEvent(event);
             Db.updateDataByPrimaryKey({
-                key: it.itemId, valObj: valObj, isDeepExtend: isDeepExtend, callback: (data)=> {
+                key: it.itemId,
+                valObj: $.extend(valObj, {updateTime: (new Date()).getTime()}),
+                isDeepExtend: isDeepExtend,
+                callback: (data)=> {
                     if (typeof data !== "undefined") {
                         Render.updateTodoItem(it.$thisItem, data);
                         callback && callback(data);

@@ -36,7 +36,7 @@
                 callback && callback(e.target.result);
             };
         },
-        getDataByIndex({index='main', callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
+        getDataByIndex({index = 'main', callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
             var transaction = db.transaction(storeName);
             var store = transaction.objectStore(storeName);
             var ind = store.index(indexName);
@@ -72,7 +72,7 @@
         },
 
         //
-        updateDataByPrimaryKey({key, valObj, storeName = Conf.mainStoreName, db = Common.mainDB,callback, isDeepExtend=false}){
+        updateDataByPrimaryKey({key, valObj, storeName = Conf.mainStoreName, db = Common.mainDB, callback, isDeepExtend = false}){
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
             let request = store.get(key);
@@ -83,7 +83,7 @@
                 callback && callback(data);
             };
         },
-        updateDataByIndex({index='main',valObj, callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
+        updateDataByIndex({index = 'main', valObj, callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
             var transaction = db.transaction(storeName);
             var store = transaction.objectStore(storeName);
             var ind = store.index(indexName);
@@ -121,7 +121,7 @@
             if ($.isEmptyObject(store))return;
             store.createIndex(name, key, options); // 创建状态索引，将数据对象中的某个字段作为该索引的键值
         },
-        getTodoDatas({id, status, tags = [], callback ,autoRender=true}){
+        getTodoDatas({id, status, tags = [], callback, autoRender = true}){
             if ($.isNumeric(id)) { // 如果指定id，忽略其他筛选条件，返回id指定数据
                 Db.getDataByPrimaryKey({key: id, callback: callback});
             } else { // 没有指定id，则获取所有数据 进行条件筛选
@@ -138,10 +138,11 @@
             function filte(datas) {
 
                 // 状态筛选
-                if (typeof status === 'string' && status !== 'all') {
-                    let res = [];
+                if (typeof status === 'string') {
+                    let res = [], statusList = [].concat(status);
+                    (status === 'all') && (statusList = ['finished', 'unfinished']);
                     $.each(datas, (ind, data)=> {
-                        (data.status === status) && res.push(data);
+                        (statusList.includes(data.status)) && res.push(data);
                     });
                     datas = res;
                 }

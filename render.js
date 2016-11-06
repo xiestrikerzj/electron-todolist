@@ -1,7 +1,7 @@
 /**
  * Created by Striker on 2016/9/24.
  */
-
+window.thunkify = require('thunkify');
 (()=> {
 
     // 元素模板 形式是返回元素html的函数
@@ -26,14 +26,17 @@
                 case Conf.todoStatusMap[3]: // delay
                     itemCss += " list-group-item-danger";
                     break;
+                case Conf.todoStatusMap[4]: // deleted
+                    break;
             }
+
             return `<div class="clearfix list-group-item todoItem${itemCss}"
                 data-id="${data.id}" data-cont="${data.cont}" data-tags='${JSON.stringify(data.tags || [])}'
                 data-status="${data.status}">
                 <div class="todoCont fl">
                 ${data.cont}
                 </div>
-                ${btnGroup && Temp.todoItemBtnGroup(btnGroup)}
+                ${btnGroup ? Temp.todoItemBtnGroup(btnGroup) : ''}
                 </div>`
         },
 
@@ -129,7 +132,7 @@
     };
 
     let Render = {
-        todoItems({datas, showDate=false, prepend = false, $container = Common.$todolistContainer}){
+        todoItems({datas, showDate = false, prepend = false, $container = Common.$todolistContainer}){
             datas = [].concat(datas);
             let html = '';
             $.map(datas, (data)=> {

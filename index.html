@@ -7,8 +7,8 @@
     <link rel="stylesheet" type="text/css" href="css/base.css">
     <link rel="stylesheet" type="text/css" href="css/index.css">
 </head>
-<body>
-<div class="input-group">
+<body class="clearfix">
+<div class="input-group" id="newTodoInputContainer">
     <input type="text" class="form-control newTodoInput" placeholder="输入待办项并回车">
     <span class="input-group-btn">
 		<button class="btn btn-primary newTodoBtn glyphicon glyphicon-plus" type="button"></button>
@@ -19,9 +19,10 @@
 
 <div class="filterContainer">
     <div class="btn-group-vertical fr filterBox" style="padding: 0;">
-        <button type="button" data-val="all" class="btn btn-default filter-all filter">所有</button>
-        <button type="button" data-val="unfinished" class="btn btn-default filter-unfinished filter">未完成</button>
-        <button type="button" data-val="finished" class="btn btn-default filter-finished filter">已完成</button>
+        <button type="button" data-val="all" class="btn btn-default filter">所有</button>
+        <button type="button" data-val="unfinished" class="btn btn-default filter">未完成</button>
+        <button type="button" data-val="finished" class="btn btn-default filter">已完成</button>
+        <button type="button" data-val="deleted" class="btn btn-default filter">已删除</button>
     </div>
 
     <div class="tagFilterContainer fr">

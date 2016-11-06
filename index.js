@@ -4,6 +4,16 @@
     let Render = require('./render.js').Render;
     let Listener = require('./listener.js').Listener;
 
+    // let thunkify = require('thunkify');
+    // var t = thunkify(window.indexedDB.open);
+    // function*gen() {
+    //     yield t('testDb',1);
+    // }
+    //
+    // let g = gen();
+    // let gg=g.next();
+    // debugger
+
     let fn = {
         init(){
             let dbVersion = 17; // 数据库版本，修改后才会执行onupgradeneeded事件处理函数
@@ -25,8 +35,8 @@
                             if (!appStatus) {
                                 appStatus = {
                                     flag: 'main',
-                                    statusFilter:'all',
-                                    tags:[Conf.noTagTxt],
+                                    statusFilter: 'all',
+                                    tags: [Conf.noTagTxt],
                                     tagsFilter: [],
                                     initTime: (new Date()).getTime()
                                 };
@@ -39,7 +49,7 @@
                             Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
 
                             // 渲染标签筛选菜单项
-                            Render.tagMenuItem({tags: appStatus.tags, actTags: []});
+                            Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
 
                             // 标签筛选输入框内容初始化
                             Common.$tagFilterInput.val(`标签:${($.isEmptyObject(appStatus.tagsFilter) ? ["所有"] : appStatus.tagsFilter).join(',')}`);

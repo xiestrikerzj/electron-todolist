@@ -1,9 +1,18 @@
+
+#newTodoInputContainer{
+    padding: 0 10px;
+}
+
+.newTodoBtn{
+    margin-top: -2px;
+}
+
 .todolistContainer {
     min-height: 200px;
     width: 80%;
     float: left;
     margin-top: 10px;
-    padding-right: 10px !important;
+    padding:0 10px !important;
 }
 
 .todolistContainer .todoItem {
@@ -16,6 +25,7 @@
     /*bottom: 4px;*/
     /*right: 5px;*/
     margin: -8px;
+    margin-right: -12px;
 }
 
 /*筛选栏*/
@@ -23,6 +33,7 @@
     width: 20%;
     float: right;
     margin-top: 10px;
+    padding-right: 10px;
 }
 
 .filterBox{
@@ -43,9 +54,6 @@
     overflow: hidden;
     /*float: left;*/
     margin-top: 2px;
-}
-.tagFilterBtnGroup button{
-    /*width: 50%;*/
 }
 .tagFilterBtn{
     border-radius:0;
@@ -99,11 +107,15 @@
     border-radius: 4px;
     padding-top: 0;
     border: 1px solid #cccccc;
+    overflow: hidden;
 }
 #tagFilterBtnGroupContainer{
     border: 0;
     padding: 0;
     margin-bottom: 5px;
+}
+.tagFilterBtnGroup{
+    overflow: hidden;
 }
 .tagFilterWayBtn{
     border-radius: 0;
@@ -121,7 +133,13 @@
     display: block;
     box-shadow: none;
     border: 0;
+    min-width: inherit;
 }
+
+.tagMenuContainer li a{
+    padding: 3px 10px;
+}
+
 #tagMenuCrossline{
     display: none;
 }
