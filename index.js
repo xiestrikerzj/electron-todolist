@@ -1,4 +1,5 @@
-(()=> {
+;(()=> {
+    require('./common.js');
     let Db = require('./db.js').Db;
     let Temp = require('./render.js').Temp;
     let Render = require('./render.js').Render;

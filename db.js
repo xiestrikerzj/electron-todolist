@@ -2,7 +2,7 @@
  * Created by Striker on 2016/9/24.
  */
 
-(()=> {
+;(()=> {
 
     let Db = {
         openDB ({name, version = 1, onsuccess, onupgradeneeded, onerror}){
@@ -147,8 +147,8 @@
                     datas = res;
                 }
 
-                // 标签筛选
-                if ($.isArray(tags) && !$.isEmptyObject(tags)) {
+                // 标签筛选 如果筛选已删除的商品 则略过标签筛选
+                if ($.isArray(tags) && !$.isEmptyObject(tags) && status !== 'deleted') {
                     let res = [];
                     $.each(datas, (ind, data)=> {
                         $.each(tags, (i, tag)=> {

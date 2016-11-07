@@ -35,7 +35,7 @@
  * 2、如果在你的模块中，想要两个弹窗内容同时存在，可以创建多个弹窗对象，同时设置适合的样式，把他们从视觉上区别开来。
  */
 
-define('module/popupWindow', ['base/MoGu'], function (MoGu) {
+;define('module/popupWindow', ['base/MoGu'], function (MoGu) {
 
     var PopupWindow = function (config) {
         var self = this;

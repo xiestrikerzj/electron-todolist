@@ -45,9 +45,10 @@
     box-shadow: none;
 }
 
-.filter{
-
+.btn.filter{
+    width: 100%;
 }
+
 /*标签盒子*/
 .tagsBox {
     width: 157px;

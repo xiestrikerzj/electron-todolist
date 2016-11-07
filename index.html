@@ -22,7 +22,6 @@
         <button type="button" data-val="all" class="btn btn-default filter">所有</button>
         <button type="button" data-val="unfinished" class="btn btn-default filter">未完成</button>
         <button type="button" data-val="finished" class="btn btn-default filter">已完成</button>
-        <button type="button" data-val="deleted" class="btn btn-default filter">已删除</button>
     </div>
 
     <div class="tagFilterContainer fr">
@@ -33,6 +32,8 @@
         </div>
         <ul class="dropdown-menu tagMenuContainer" id="tagMenu1"></ul>
     </div>
+
+    <button type="button" data-val="deleted" class="btn btn-default filter" style="margin-top: 10px;">回收站</button>
 
 </div>
 
@@ -48,11 +49,7 @@
 
     <!-- normal script imports etc  -->
     <script type="text/javascript" src="jquery-3.1.0.min.js"></script>
-    <script type="text/javascript" src="common.js"></script>
     <script type="text/javascript" src="index.js"></script>
-    <script type="text/javascript" src="db.js"></script>
-    <script type="text/javascript" src="render.js"></script>
-    <script type="text/javascript" src="listener.js"></script>
 
     <!-- Insert this line after script imports -->
     <script>if (window.module) module = window.module;</script>

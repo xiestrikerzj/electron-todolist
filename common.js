@@ -2,7 +2,7 @@
  * Created by Striker on 2016/9/24.
  */
 
-(()=> {
+;(()=> {
     window.Fn = {
         initCommonDom(filters = Filter, obj) {
             $.map(filters, function (item, key) {

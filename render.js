@@ -2,7 +2,7 @@
  * Created by Striker on 2016/9/24.
  */
 window.thunkify = require('thunkify');
-(()=> {
+;(()=> {
 
     // 元素模板 形式是返回元素html的函数
     let Temp = {
@@ -10,7 +10,7 @@ window.thunkify = require('thunkify');
             if ($.isEmptyObject(data)) {
                 return "";
             }
-            let btnGroup;
+            let btnGroup,initTime=new Date(data.initTime);
             switch (data.status) {
                 case Conf.todoStatusMap[0]: // unfinished
                     itemCss += " list-group-item-info";
@@ -32,7 +32,7 @@ window.thunkify = require('thunkify');
 
             return `<div class="clearfix list-group-item todoItem${itemCss}"
                 data-id="${data.id}" data-cont="${data.cont}" data-tags='${JSON.stringify(data.tags || [])}'
-                data-status="${data.status}">
+                data-status="${data.status}" data-time="${JSON.stringify([initTime.getFullYear(),initTime.getMonth(),initTime.getDate()])}">
                 <div class="todoCont fl">
                 ${data.cont}
                 </div>

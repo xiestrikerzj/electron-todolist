@@ -3,6 +3,25 @@
  */
 
 let fs = require('fs');
+let co = require('co');
+
+// function co(generator) {
+//     return function(fn) {
+//         var gen = generator();
+//         function next(err, result) {
+//             if(err){
+//                 return fn(err);
+//             }
+//             var step = gen.next(result);
+//             if (!step.done) {
+//                 step.value(next);
+//             } else {
+//                 fn(null, step.value);
+//             }
+//         }
+//         next();
+//     }
+// }
 
 // fs.readFile('./electron/todolist/databak.json', "utf8", function (error, data) {
 //     if (error) throw error;
@@ -12,40 +31,88 @@ let fs = require('fs');
 window.readFileThunk = thunkify(fs.readFile);
 window.writeFileThunk = thunkify(fs.writeFile);
 window.test = thunkify(window.indexedDB.open);
-readFileThunk('./electron/todolist/databak.json', 'utf8')((err, data)=> {
-    l(JSON.parse(data).test)
-});
-writeFileThunk('./electron/todolist/databak.json', '{"tt":1}')((err)=> {
-    l(1, err)
-});
+// readFileThunk('./databak.json', 'utf8')((err, data)=> {
+//     l(JSON.parse(data).test)
+// });
+// writeFileThunk('./databak.json', '{"tt":1}')((err)=> {
+//     l(1, err)
+// });
+
 // test('testDb', 1)((e)=> {
 //     // l(e)
 //     console.log(e)
 // });
 
-function* openDB ({name, version = 1, onsuccess, onupgradeneeded, onerror}) {
-    let request = window.indexedDB.open(name, version);
-    request.onerror = onerror;
-    request.onsuccess = (e)=> {
-        // yield 'test';
-    };
-    request.onupgradeneeded = onupgradeneeded;
-    yield 2;
+// function* openDB ({name, version = 1, onsuccess, onupgradeneeded, onerror}) {
+//     let request = window.indexedDB.open(name, version);
+//     request.onerror = onerror;
+//     request.onsuccess = (e)=> {
+//         // yield 'test';
+//     };
+//     request.onupgradeneeded = onupgradeneeded;
+//     yield 2;
+// }
+
+function t(p, call) {
+    call(p + 1);
+    // return new Promise(function(resolve, reject) {
+    //     if (p){
+    //         resolve(p+1);
+    //     } else {
+    //         reject(error);
+    //     }
+    // });
 }
 
-co(function* (){
-    var data1 = yield readFileThunk('./electron/todolist/databak.json');
+let tt = thunkify(t);
+// co(function*() {
+//     var ttt = yield tt(2);
+//     l(ttt)
+// });
+
+// function*gen() {
+//     var data1 = yield tt(2);
+//     console.log(1,data1);
+//     var data2 = yield readFileThunk('./file.js', 'utf8');
+//     console.log(data2);
+// }
+// let g =gen();
+// let gr =g.next().value(data=>{
+//         return data
+//     });
+//     g.next(gr);
+
+// var request = require('request');
+// co(function *(){
+//     var a = yield request('http://google.com');
+//     var b = yield request('http://yahoo.com');
+//     console.log(a[0].statusCode);
+//     console.log(b[0].statusCode);
+// })()
+
+
+co(function *() {
+    let a = yield tt(3);
+    l(a)
+    // yield readFileThunk('./file.js', 'utf8');
+    // yield readFileThunk('./file.js', 'utf8');
+    return a;
+})
+
+co(function*() {
+    // var data1 = yield tt(2);
+    var data1 = yield readFileThunk('./databak.json', 'utf8');
     console.log(data1);
-    var data2 = yield readFileThunk('./electron/todolist/file.js');
+    var data2 = yield readFileThunk('./file.js', 'utf8');
     console.log(data2);
 })
+
 // let op = openDB({name: 'testDb'});
 // l(op.next());
 
 // fs.state('./electron/todolist/databak.json')
 
-co()
-
+;
 (()=> {
     let Temp = require('./render.js').Temp;
     let Render = require('./render.js').Render;
@@ -138,7 +205,9 @@ co()
                     [Filter.filterBtn](e){
                         let $this = $(this);
                         let filterKey = $this.data('val');
-                        $this.addClass('btn-primary').siblings().removeClass('btn-primary');
+                        // filterkey !== 'deleted' && $this.addClass('btn-primary').siblings().removeClass('btn-primary');
+                        $(Filter.filterBtn).removeClass('btn-primary');
+                        $this.addClass('btn-primary');
 
                         // 更新搜索状态和搜索按钮样式
                         Db.updateDataByIndex({
