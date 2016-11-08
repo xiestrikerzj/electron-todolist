@@ -31,8 +31,9 @@ window.thunkify = require('thunkify');
             }
 
             return `<div class="clearfix list-group-item todoItem${itemCss}"
-                data-id="${data.id}" data-cont="${data.cont}" data-tags='${JSON.stringify(data.tags || [])}'
-                data-status="${data.status}" data-time="${JSON.stringify([initTime.getFullYear(),initTime.getMonth(),initTime.getDate()])}">
+                data-id='${data.id}' data-cont="${data.cont}" data-tags='${JSON.stringify(data.tags || [])}'
+                data-status="${data.status}" data-btngroup='${JSON.stringify(btnGroup)}'
+                data-time="${JSON.stringify([initTime.getFullYear(),initTime.getMonth(),initTime.getDate()])}">
                 <div class="todoCont fl">
                 ${data.cont}
                 </div>
@@ -77,7 +78,7 @@ window.thunkify = require('thunkify');
             var inputHtml = ``;
             if (btnHtml) {
                 return `<div class="input-group"  style="${css}">
-                <input type="text" class="form-control ${className}" placeholder="${placeholder}" value="${value}">
+                <div type="text" contenteditable="true" class="form-control ${className}" placeholder="${placeholder}" data-val="${value}">${value}</div>
                 <span class="input-group-btn">
                 ${btnHtml}
                 </span>

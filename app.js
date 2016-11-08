@@ -15,8 +15,14 @@ function createWindow() {
     // 加载应用的 index.html。
     mainWindow.loadURL(`file://${__dirname}/index.html`);
 
-    // 启用开发工具。
+    // 启用开发工具
     mainWindow.webContents.openDevTools();
+
+    // 设置窗口的菜单栏是否可以自动隐藏. 一旦设置了，只有当用户按下 Alt 键时则显示
+    mainWindow.setAutoHideMenuBar(true);
+
+    // 隐藏菜单栏
+    //mainWindow.setMenuBarVisibility(false);
 
     // 当 window 被关闭，这个事件会被触发。
     mainWindow.on('closed', () => {

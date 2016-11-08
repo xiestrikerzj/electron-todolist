@@ -98,7 +98,7 @@
             }
         },
         addDatas(datas, eachCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
-            datas = [].concat(datas);
+            datas = Array.from(datas);
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
 

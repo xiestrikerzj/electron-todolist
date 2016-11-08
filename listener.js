@@ -5,29 +5,6 @@
 let fs = require('fs');
 let co = require('co');
 
-// function co(generator) {
-//     return function(fn) {
-//         var gen = generator();
-//         function next(err, result) {
-//             if(err){
-//                 return fn(err);
-//             }
-//             var step = gen.next(result);
-//             if (!step.done) {
-//                 step.value(next);
-//             } else {
-//                 fn(null, step.value);
-//             }
-//         }
-//         next();
-//     }
-// }
-
-// fs.readFile('./electron/todolist/databak.json', "utf8", function (error, data) {
-//     if (error) throw error;
-//     console.log(data);
-// });
-
 window.readFileThunk = thunkify(fs.readFile);
 window.writeFileThunk = thunkify(fs.writeFile);
 window.test = thunkify(window.indexedDB.open);
@@ -38,82 +15,38 @@ window.test = thunkify(window.indexedDB.open);
 //     l(1, err)
 // });
 
-// test('testDb', 1)((e)=> {
-//     // l(e)
-//     console.log(e)
-// });
+function t(name, version) {
+    return new Promise(function (resolve, reject) {
+        let request = window.indexedDB.open(name, version);
+        request.onerror = reject;
+        request.onsuccess = resolve;
+        request.onupgradeneeded = resolve;
 
-// function* openDB ({name, version = 1, onsuccess, onupgradeneeded, onerror}) {
-//     let request = window.indexedDB.open(name, version);
-//     request.onerror = onerror;
-//     request.onsuccess = (e)=> {
-//         // yield 'test';
-//     };
-//     request.onupgradeneeded = onupgradeneeded;
-//     yield 2;
-// }
-
-function t(p, call) {
-    call(p + 1);
-    // return new Promise(function(resolve, reject) {
-    //     if (p){
-    //         resolve(p+1);
-    //     } else {
-    //         reject(error);
-    //     }
-    // });
+    });
+}
+function tt(p) {
+    return new Promise(function (resolve, reject) {
+        if (1) {
+            resolve(p + 2);
+        } else {
+            reject(2);
+        }
+    });
 }
 
-let tt = thunkify(t);
-// co(function*() {
-//     var ttt = yield tt(2);
-//     l(ttt)
-// });
+co(function* () {
+    var r = yield t('db', 1);
+    l(r);
+    //var rr = yield tt(3);
+    //l(rr)
+    return r;
+}).then(function (value) {
+    //console.log('t',value);
+}, function (err) {
+    console.error('e', err.stack);
+});
 
-// function*gen() {
-//     var data1 = yield tt(2);
-//     console.log(1,data1);
-//     var data2 = yield readFileThunk('./file.js', 'utf8');
-//     console.log(data2);
-// }
-// let g =gen();
-// let gr =g.next().value(data=>{
-//         return data
-//     });
-//     g.next(gr);
-
-// var request = require('request');
-// co(function *(){
-//     var a = yield request('http://google.com');
-//     var b = yield request('http://yahoo.com');
-//     console.log(a[0].statusCode);
-//     console.log(b[0].statusCode);
-// })()
-
-
-co(function *() {
-    let a = yield tt(3);
-    l(a)
-    // yield readFileThunk('./file.js', 'utf8');
-    // yield readFileThunk('./file.js', 'utf8');
-    return a;
-})
-
-co(function*() {
-    // var data1 = yield tt(2);
-    var data1 = yield readFileThunk('./databak.json', 'utf8');
-    console.log(data1);
-    var data2 = yield readFileThunk('./file.js', 'utf8');
-    console.log(data2);
-})
-
-// let op = openDB({name: 'testDb'});
-// l(op.next());
-
-// fs.state('./electron/todolist/databak.json')
-
-;
-(()=> {
+;(()=> {
     let Temp = require('./render.js').Temp;
     let Render = require('./render.js').Render;
     let Db = require('./db.js').Db;
@@ -141,11 +74,25 @@ co(function*() {
             return {
                 "click": { // 事件名，下同
                     [Filter.newTodoBtn](){ // 元素筛选器和处理函数，下同
-                        let newTodoCont = Common.$newTodoInput.val();
+                        let newTodoCont = Common.$newTodoInput.val(), status;
+
                         if (newTodoCont !== "") {
-                            let contList = newTodoCont.split(/\n/);
-                            let targData = $.extend(true, {}, Conf.newTodoItemForm(), {cont: newTodoCont});
-                            Db.addDatas(targData, (e)=> {
+                            let contList = newTodoCont.split(/\n/), dataList = [];
+                            $.each(contList, (ind, cont)=> {
+
+                                // 如果内容中包含‘done’字样，则新待办项的默认状态为已完成
+                                if (cont.includes('done')) {
+                                    status = 'finished';
+                                    cont = cont.replace('done', '');
+                                } else {
+                                    status = undefined;
+                                }
+                                cont !== '' && dataList.push($.extend(true, {}, Conf.newTodoItemForm(), {
+                                    cont: cont,
+                                    status: status
+                                }));
+                            });
+                            Db.addDatas(dataList, (e)=> {
                                 let dataInd = e.target.result;
                                 Db.getDataByPrimaryKey({
                                     key: dataInd, callback: (data)=> {
@@ -158,9 +105,18 @@ co(function*() {
                         }
                     },
                     [Filter.todoItem](e){
-                        //let $this = $(e.target);
+                        let $this = $(this), $thisCont = $this.find(Filter.todoCont);
+                        $this.css({'height': 'auto'});
+                        $thisCont.css({
+                            'overflow': 'inherit',
+                            'white-space': 'initial',
+                        });
+                        //let $this = $(this);
+                        //$this.css('height','auto');
                         //$this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
                         //$this.find(Filter.todoItemBtnGroup).toggleClass('show');
+                    },
+                    [Filter.todoCont](e){
                     },
                     [Filter.todoItemBtnGroup](e){
                         e.stopPropagation();
@@ -177,8 +133,7 @@ co(function*() {
                             event: e, valObj: {
                                 status: "deleted"
                             }, callback: (data)=> {
-                                let dataCont = data.cont;
-                                let $thisTodo = $(`${Filter.todoItem}[data-cont="${dataCont}"]`);
+                                let $thisTodo = $(`${Filter.todoItem}[data-id="${data.id}"]`);
                                 $thisTodo.remove();
                             }
                         });
@@ -188,7 +143,7 @@ co(function*() {
                         it.$thisItem.html(Temp.inputGroup({
                             value: it.itemText,
                             btnHtml: Temp.todoBtns()['save'],
-                            css: "margin-left: -14px; margin-top: -7px; margin-bottom: -7px;"
+                            css: "margin:-7px 0 -7px -14px;"
                         }));
                         let $thisInput = it.$thisItem.find(Filter.todoItemInput);
                         $thisInput.focus().val($thisInput.val()); // 把光标移到代编辑内容尾部
@@ -299,7 +254,7 @@ co(function*() {
                         let $this = $(this),
                             thisVal = $this.data('val') || 'single';
                         if (thisVal === 'all') {
-                            Common.$tagFilterInput.val('标签:所有');
+                            Common.$tagFilterInput.val('标签:所有标签');
                             Db.updateDataByIndex({
                                 valObj: {tagsFilter: []},
                                 callback: (data)=> {
@@ -329,8 +284,21 @@ co(function*() {
                             case "mouseenter":
                                 $this.find(Filter.todoItemBtnGroup).addClass('show').show();
                                 $this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
+                                //$this.find(Filter.todoCont).css('width', '80%');
+                                //$this.find(Filter.todoCont).css({
+                                //'width': `${parseInt($this.css('width'))*.8}px`,
+                                //'overflow': 'hidden',
+                                //'text-overflow': 'ellipsis',
+                                //'white-space': 'nowrap',
+                                //});
                                 break;
                             case "mouseleave":
+                                //$this.css({'height':'42px'});
+                                $this.find(Filter.todoCont).css({
+                                    'overflow': 'hidden',
+                                    'white-space': 'nowrap',
+                                });
+                                //$this.find(Filter.todoCont).css('width', 'auto');
                                 // $this.find(Filter.todoItemBtnGroup).removeClass('show').hide();
                                 // if ($this.find(Common.$tagBoxContainer).length > 0) {
                                 //     Common.$tagBoxContainer.remove();
@@ -354,7 +322,7 @@ co(function*() {
                         let it = fn.getTodoItemWithEvent(e);
                         switch (e.keyCode) {
                             case 13: // enter
-                                it.$thisItem.find(Filter.itemModifyDoneBtn).click();
+                                //it.$thisItem.find(Filter.itemModifyDoneBtn).click();
                                 break;
                             case 27: // esc
                                 Db.getDataByKey(it.itemId, (data)=> {
@@ -410,8 +378,8 @@ co(function*() {
                     },
 
                     [Filter.newTagInput](e){
-                        // var $this = $(this);
-                        // $this.replaceWith(Temp.todoBtns()['newTag']);
+                        var $this = $(this);
+                        $this.replaceWith(Temp.todoBtns()['newTag']);
                     },
 
                     // 在所有元素都失去焦点的情况下
@@ -440,7 +408,7 @@ co(function*() {
                 , $thisItem: $thisItem
                 , itemId: $thisItem.data('id')
                 , itemText: $thisItem.data('cont')
-                , itemInputText: $thisItem.find(Filter.todoItemInput).val()
+                , itemInputText: $thisItem.find(Filter.todoItemInput).data('val')
             }
         },
 
