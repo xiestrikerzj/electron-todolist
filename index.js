@@ -5,15 +5,8 @@
     let Render = require('./render.js').Render;
     let Listener = require('./listener.js').Listener;
 
-    // let thunkify = require('thunkify');
-    // var t = thunkify(window.indexedDB.open);
-    // function*gen() {
-    //     yield t('testDb',1);
-    // }
-    //
-    // let g = gen();
-    // let gg=g.next();
-    // debugger
+    let fs = require('fs');
+    let co = require('co');
 
     let fn = {
         init(){

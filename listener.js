@@ -2,50 +2,6 @@
  * Created by Striker on 2016/9/24.
  */
 
-let fs = require('fs');
-let co = require('co');
-
-window.readFileThunk = thunkify(fs.readFile);
-window.writeFileThunk = thunkify(fs.writeFile);
-window.test = thunkify(window.indexedDB.open);
-// readFileThunk('./databak.json', 'utf8')((err, data)=> {
-//     l(JSON.parse(data).test)
-// });
-// writeFileThunk('./databak.json', '{"tt":1}')((err)=> {
-//     l(1, err)
-// });
-
-function t(name, version) {
-    return new Promise(function (resolve, reject) {
-        let request = window.indexedDB.open(name, version);
-        request.onerror = reject;
-        request.onsuccess = resolve;
-        request.onupgradeneeded = resolve;
-
-    });
-}
-function tt(p) {
-    return new Promise(function (resolve, reject) {
-        if (1) {
-            resolve(p + 2);
-        } else {
-            reject(2);
-        }
-    });
-}
-
-co(function* () {
-    var r = yield t('db', 1);
-    l(r);
-    //var rr = yield tt(3);
-    //l(rr)
-    return r;
-}).then(function (value) {
-    //console.log('t',value);
-}, function (err) {
-    console.error('e', err.stack);
-});
-
 ;(()=> {
     let Temp = require('./render.js').Temp;
     let Render = require('./render.js').Render;
@@ -111,10 +67,6 @@ co(function* () {
                             'overflow': 'inherit',
                             'white-space': 'initial',
                         });
-                        //let $this = $(this);
-                        //$this.css('height','auto');
-                        //$this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
-                        //$this.find(Filter.todoItemBtnGroup).toggleClass('show');
                     },
                     [Filter.todoCont](e){
                     },
@@ -146,7 +98,7 @@ co(function* () {
                             css: "margin:-7px 0 -7px -14px;"
                         }));
                         let $thisInput = it.$thisItem.find(Filter.todoItemInput);
-                        $thisInput.focus().val($thisInput.val()); // 把光标移到代编辑内容尾部
+                        $thisInput.focus().html($thisInput.html()); // 把光标移到代编辑内容尾部
                     },
                     [Filter.itemModifyDoneBtn](e){
                         let it = fn.getTodoItemWithEvent(e);
@@ -284,25 +236,12 @@ co(function* () {
                             case "mouseenter":
                                 $this.find(Filter.todoItemBtnGroup).addClass('show').show();
                                 $this.siblings().find(Filter.todoItemBtnGroup).removeClass('show').hide();
-                                //$this.find(Filter.todoCont).css('width', '80%');
-                                //$this.find(Filter.todoCont).css({
-                                //'width': `${parseInt($this.css('width'))*.8}px`,
-                                //'overflow': 'hidden',
-                                //'text-overflow': 'ellipsis',
-                                //'white-space': 'nowrap',
-                                //});
                                 break;
                             case "mouseleave":
-                                //$this.css({'height':'42px'});
                                 $this.find(Filter.todoCont).css({
                                     'overflow': 'hidden',
                                     'white-space': 'nowrap',
                                 });
-                                //$this.find(Filter.todoCont).css('width', 'auto');
-                                // $this.find(Filter.todoItemBtnGroup).removeClass('show').hide();
-                                // if ($this.find(Common.$tagBoxContainer).length > 0) {
-                                //     Common.$tagBoxContainer.remove();
-                                // }
                                 break;
                         }
                     },
@@ -371,7 +310,7 @@ co(function* () {
                     // 当修改代办项的输入框失去焦点时，默认用修改后的内容替换原内容，并隐藏编辑框
                     [Filter.todoItemInput](e){
                         let it = fn.getTodoItemWithEvent(e);
-                        it.$thisItem.find(Filter.itemModifyDoneBtn).click();
+                        // it.$thisItem.find(Filter.itemModifyDoneBtn).click();
 
                         // 待办项编辑选项失去焦点时，自动给新建待办项输入框加上焦点
                         Common.$newTodoInput.focus();

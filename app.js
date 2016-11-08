@@ -22,7 +22,7 @@ function createWindow() {
     mainWindow.setAutoHideMenuBar(true);
 
     // 隐藏菜单栏
-    //mainWindow.setMenuBarVisibility(false);
+    mainWindow.setMenuBarVisibility(false);
 
     // 当 window 被关闭，这个事件会被触发。
     mainWindow.on('closed', () => {

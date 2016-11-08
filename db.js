@@ -2,6 +2,7 @@
  * Created by Striker on 2016/9/24.
  */
 
+let co = require('co');
 ;(()=> {
 
     let Db = {
@@ -32,9 +33,14 @@
             let transaction = db.transaction(storeName, 'readonly');
             let store = transaction.objectStore(storeName);
             let request = store.get(key);
-            request.onsuccess = function (e) {
-                callback && callback(e.target.result);
-            };
+            // request.onsuccess = function (e) {
+            //     callback && callback(e.target.result);
+            // };
+
+            return new Promise(function (resolved, reject) {
+                request.onsuccess = resolved;
+                request.onerror = reject;
+            });
         },
         getDataByIndex({index = 'main', callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
             var transaction = db.transaction(storeName);
@@ -63,12 +69,16 @@
             };
         },
         getAllData({callback, storeName = Conf.mainStoreName, db = Common.mainDB}){
-            let transaction = db.transaction(storeName, 'readonly');
-            let store = transaction.objectStore(storeName);
-            let request = store.getAll();
-            request.onsuccess = (e)=> {
-                callback && callback(e.target.result, e);
-            }
+            // request.onsuccess = (e)=> {
+            //     callback && callback(e.target.result, e);
+            // };
+            return new Promise((resolve, reject)=> {
+                let transaction = db.transaction(storeName, 'readonly');
+                let store = transaction.objectStore(storeName);
+                let request = store.getAll();
+                request.onsuccess = resolve;
+                request.onerror = reject;
+            })
         },
 
         //
@@ -122,17 +132,17 @@
             store.createIndex(name, key, options); // 创建状态索引，将数据对象中的某个字段作为该索引的键值
         },
         getTodoDatas({id, status, tags = [], callback, autoRender = true}){
-            if ($.isNumeric(id)) { // 如果指定id，忽略其他筛选条件，返回id指定数据
-                Db.getDataByPrimaryKey({key: id, callback: callback});
-            } else { // 没有指定id，则获取所有数据 进行条件筛选
-                Db.getAllData({
-                    callback: (datas)=> {
-                        datas = filte(datas);
-                        autoRender && Render.todoItems({datas: datas});
-                        callback && callback(datas);
-                    }
-                })
-            }
+            co(function*() {
+                if ($.isNumeric(id)) { // 如果指定id，忽略其他筛选条件，返回id指定数据
+                    let e = yield Db.getDataByPrimaryKey({key: id});
+                    callback(e.target.result);
+                } else { // 没有指定id，则获取所有数据 进行条件筛选
+                    let e = yield Db.getAllData({});
+                    let datas = e.target.result;
+                    datas = filte(datas);
+                    autoRender && Render.todoItems({datas: datas});
+                }
+            });
 
             // 条件筛选
             function filte(datas) {
