@@ -2,7 +2,6 @@
  * Created by Striker on 2016/9/24.
  */
 
-let co = require('co');
 ;(()=> {
 
     let Db = {
@@ -29,26 +28,33 @@ let co = require('co');
 
             // 其他针对数据库的处理
         },
-        getDataByPrimaryKey({key, callback, storeName = Conf.mainStoreName, db = Common.mainDB}){
+        getDatasByPrimaryKey({keys=[], storeName = Conf.mainStoreName, db = Common.mainDB}){
+            keys = [].concat(keys);
             let transaction = db.transaction(storeName, 'readonly');
             let store = transaction.objectStore(storeName);
-            let request = store.get(key);
-            // request.onsuccess = function (e) {
-            //     callback && callback(e.target.result);
-            // };
-
-            return new Promise(function (resolved, reject) {
-                request.onsuccess = resolved;
-                request.onerror = reject;
+            let promises = [];
+            $.each(keys, (index, key)=> {
+                promises.push(new Promise(function (resolved, reject) {
+                    let request = store.get(key);
+                    request.onsuccess = (e)=> {
+                        resolved(e.target.result);
+                    };
+                    request.onerror = reject;
+                }));
             });
+            return promises;
         },
-        getDataByIndex({index = 'main', callback, indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
+        getDataByIndex({index = 'main', indexName = Conf.statusIndexName, storeName = Conf.statusStoreName, db = Common.mainDB}){
             var transaction = db.transaction(storeName);
             var store = transaction.objectStore(storeName);
             var ind = store.index(indexName);
-            ind.get(index).onsuccess = (e) => {
-                callback && callback(e.target.result, e);
-            }
+            return new Promise((resolve, reject)=> {
+                let request = ind.get(index);
+                request.onsuccess = (e) => {
+                    resolve(e.target.result);
+                };
+                request.onerror = reject;
+            });
         },
         getDatasByIndex({IDBKeyRange, callback, eachCallback, indexName = Conf.mainIndexName, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let datas = [], keys = [];
@@ -68,15 +74,14 @@ let co = require('co');
                 }
             };
         },
-        getAllData({callback, storeName = Conf.mainStoreName, db = Common.mainDB}){
-            // request.onsuccess = (e)=> {
-            //     callback && callback(e.target.result, e);
-            // };
+        getAllData({storeName = Conf.mainStoreName, db = Common.mainDB}){
             return new Promise((resolve, reject)=> {
                 let transaction = db.transaction(storeName, 'readonly');
                 let store = transaction.objectStore(storeName);
                 let request = store.getAll();
-                request.onsuccess = resolve;
+                request.onsuccess = (e)=> {
+                    resolve(e.target.result);
+                };
                 request.onerror = reject;
             })
         },
@@ -107,14 +112,24 @@ let co = require('co');
                 });
             }
         },
-        addDatas(datas, eachCallback, storeName = Conf.mainStoreName, db = Common.mainDB){
-            datas = Array.from(datas);
+        addDatas({datas=[], storeName = Conf.mainStoreName, db = Common.mainDB}){
+            datas = [].concat(datas);
             let transaction = db.transaction(storeName, 'readwrite');
             let store = transaction.objectStore(storeName);
+            let promises = [];
 
             for (let i = 0, len = datas.length; i < len; i++) {
-                store.add(datas[i]).onsuccess = eachCallback;
+                promises.push(new Promise((resolve, reject)=> {
+                    let request = store.add(datas[i]);
+                    request.onsuccess = (e)=> {
+                        resolve(e.target.result);
+                    };
+                    request.onerror = (err)=> {
+                        reject(err);
+                    }
+                }));
             }
+            return promises;
         },
         deleteDataByPrimaryKey({key, storeName = Conf.mainStoreName, db = Common.mainDB}){
             let transaction = db.transaction(storeName, 'readwrite');
@@ -131,17 +146,24 @@ let co = require('co');
             if ($.isEmptyObject(store))return;
             store.createIndex(name, key, options); // 创建状态索引，将数据对象中的某个字段作为该索引的键值
         },
-        getTodoDatas({id, status, tags = [], callback, autoRender = true}){
-            co(function*() {
-                if ($.isNumeric(id)) { // 如果指定id，忽略其他筛选条件，返回id指定数据
-                    let e = yield Db.getDataByPrimaryKey({key: id});
-                    callback(e.target.result);
-                } else { // 没有指定id，则获取所有数据 进行条件筛选
-                    let e = yield Db.getAllData({});
-                    let datas = e.target.result;
-                    datas = filte(datas);
+        getTodoDatas({ids=[], status, tags = [], callback, autoRender = true}){
+            ids = [].concat(ids);
+            let datas;
+            return new Promise((resolve, reject)=> {
+                co(function*() {
+                    if (!$.isEmptyObject(ids)) { // 如果指定id，忽略其他筛选条件，返回id指定数据
+                        datas = yield Db.getDatasByPrimaryKey({keys: ids});
+                    } else { // 没有指定id，则获取所有数据 进行条件筛选
+                        datas = yield Db.getAllData({});
+                        datas = filte(datas);
+                    }
                     autoRender && Render.todoItems({datas: datas});
-                }
+                    return datas;
+                }).then(datas=> {
+                    resolve(datas);
+                }).catch(err=> {
+                    reject(err);
+                });
             });
 
             // 条件筛选

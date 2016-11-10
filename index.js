@@ -1,12 +1,6 @@
-;(()=> {
-    require('./common.js');
-    let Db = require('./db.js').Db;
-    let Temp = require('./render.js').Temp;
-    let Render = require('./render.js').Render;
-    let Listener = require('./listener.js').Listener;
+require('./common.js');
 
-    let fs = require('fs');
-    let co = require('co');
+;(()=> {
 
     let fn = {
         init(){
@@ -14,19 +8,21 @@
             Db.openDB({
                 name: Conf.mainDBName, version: dbVersion,
                 onsuccess: (e)=> { // onsuccess
-                    Common.mainDB = e.target.result;
-                    Db.useDatabase(Common.mainDB);
-                    Common.mainStore = Common.mainDB.transaction(Conf.mainStoreName).objectStore(Conf.mainStoreName);
-                    Common.statusStore = Common.mainDB.transaction(Conf.statusStoreName).objectStore(Conf.statusStoreName);
+                    co(function*() {
 
-                    // 初始化公共元素
-                    Fn.initCommonDom(Filter, Common);
+                        Common.mainDB = e.target.result;
+                        Db.useDatabase(Common.mainDB);
+                        Common.mainStore = Common.mainDB.transaction(Conf.mainStoreName).objectStore(Conf.mainStoreName);
+                        Common.statusStore = Common.mainDB.transaction(Conf.statusStoreName).objectStore(Conf.statusStoreName);
 
-                    // 获取app状态，进行初始化
-                    Db.getDataByIndex({
-                        callback: (datas) => {
-                            var appStatus = datas;
-                            if (!appStatus) {
+                        // 初始化公共元素
+                        Fn.initCommonDom(Filter, Common);
+
+                        // 获取app状态，进行初始化
+
+                        let appStatus = yield Db.getDataByIndex({});
+                        if (!appStatus) {
+                            co(function*() {
                                 appStatus = {
                                     flag: 'main',
                                     statusFilter: 'all',
@@ -34,35 +30,34 @@
                                     tagsFilter: [],
                                     initTime: (new Date()).getTime()
                                 };
-                                Db.addDatas(appStatus, function (e) {
-                                    appStatus.id = e.target.result;
-                                }, Conf.statusStoreName);
-                            }
-
-                            // 获取并渲染筛选后的todo数据
-                            Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
-
-                            // 渲染标签筛选菜单项
-                            Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
-
-                            // 标签筛选输入框内容初始化
-                            Common.$tagFilterInput.val(`标签:${($.isEmptyObject(appStatus.tagsFilter) ? ["所有标签"] : appStatus.tagsFilter).join(',')}`);
-
-                            // 点亮筛选按钮
-                            $(`${Filter.filterBtn}[data-val="${appStatus.statusFilter}"]`).addClass('btn-primary');
-
-
-                            // 隐藏当前的标签筛选方式按钮
-                            Render.tagFilterWayBtns({hideBtn: appStatus.tagsFilterWay || 'single'});
+                                appStatus.id = yield Db.addDatas({
+                                    datas: appStatus, storeName: Conf.statusStoreName
+                                });
+                            });
                         }
+
+                        // 获取并渲染筛选后的todo数据
+                        Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
+
+                        // 渲染标签筛选菜单项
+                        Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
+
+                        // 标签筛选输入框内容初始化
+                        Common.$tagFilterInput.val(`标签:${($.isEmptyObject(appStatus.tagsFilter) ? ["所有标签"] : appStatus.tagsFilter).join(',')}`);
+
+                        // 点亮筛选按钮
+                        $(`${Filter.filterBtn}[data-val="${appStatus.statusFilter}"]`).addClass('btn-primary');
+
+                        // 隐藏当前的标签筛选方式按钮
+                        Render.tagFilterWayBtns({hideBtn: appStatus.tagsFilterWay || 'single'});
+
+                        // 给新建待办项输入框一个焦点
+                        Common.$newTodoInput.focus();
+
+                        Listener.startListener(Listener.listenerMap()); // 普通元素事件监听
+                        Listener.startWinListener(); // 窗口时间监听
+
                     });
-
-                    // 给新建待办项输入框一个焦点
-                    Common.$newTodoInput.focus();
-
-                    Listener.startListener(Listener.listenerMap()); // 普通元素事件监听
-                    Listener.startWinListener(); // 窗口时间监听
-
                 },
                 onupgradeneeded: (e)=> { // onupgradeneeded
                     let db = e.target.result, store;

@@ -3,6 +3,15 @@
  */
 
 ;(()=> {
+    window.thunkify = require('thunkify')
+    window.fs = require('fs');
+    window.co = require('co');
+    window.Db = require('./db.js').Db;
+    window.Temp = require('./render.js').Temp;
+    window.Render = require('./render.js').Render;
+    window.Listener = require('./listener.js').Listener;
+    window.file = require('./file.js').file;
+
     window.Fn = {
         initCommonDom(filters = Filter, obj) {
             $.map(filters, function (item, key) {
@@ -14,21 +23,29 @@
         }
     };
     window.l = (...params)=> {
-        console.log(...params);
-    }
+        let callerName;
+        if (arguments.caller) {
+            callerName = callerDemo.caller.toString();
+        }
+        console.log(callerName, ...params);
+    };
 
-    window.Common = {};
+    window.Common = {
+        bakFilePath: './databak.json',
+    };
 
     window.Filter = {
-        window: 'window',
-        body: 'body'
+        window: 'window'
+        , body: 'body'
+        , textarea: 'textarea'
         , mainContainer: ''
         , newTodoBtn: '.newTodoBtn'
         , newTodoInput: '.newTodoInput'
         , todolistContainer: '.todolistContainer'
         , todoItem: '.todoItem'
-        , todoCont : '.todoCont'
+        , todoCont: '.todoCont'
         , todoItemBtnGroup: '.todoItemBtnGroup'
+        , todoDateTime: '.todoDateTime'
         , finishItemBtn: '.btn.finish'
         , deleteItemBtn: '.btn.delete'
         , removeItemBtn: '.btn.remove'
@@ -56,7 +73,6 @@
         , tagFilterDropdownBtn: '.tagFilterContainer #dropdownMenu'
         , tagFilterWayBtnGroup: '#tagFilterBtnGroupContainer .tagFilterBtnGroup'
         , tagMenuContainer: '.tagMenuContainer'
-        , tagFilterWayBtn: '.tagFilterWayBtn'
     };
 
     window.Conf = {
@@ -66,6 +82,7 @@
         mainIndexName: 'statusIndex',
         statusIndexName: 'flagIndex',
         noTagTxt: '无标签',
+        isDebug: 0, // 是否开启测试模式
         newTodoItemForm(){
             return {
                 initTime: (new Date()).getTime()

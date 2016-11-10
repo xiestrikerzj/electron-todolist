@@ -1,8 +1,26 @@
-::-webkit-scrollbar{
-    width: 2px;
+body {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin-right: -6px;
 }
-::-webkit-scrollbar-thumb{
-    background:rgba(1,1,1,.5);
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+/*::-webkit-scrollbar-thumb:window-inactive {*/
+    /*background: white;*/
+/*}*/
+
+::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    background: #7d7d7d;
+}
+
+textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 34px;
 }
 
 #newTodoInputContainer {
@@ -11,13 +29,13 @@
 
 #newTodoInputContainer .newTodoInput {
     height: 34px;
-    resize: none;
 }
 
 div[contenteditable="true"]:empty:before {
-    content:attr(placeholder);
-    color:#bbb;
+    content: attr(placeholder);
+    color: #bbb;
 }
+
 div[contenteditable="true"]:focus:before {
     /*content:none;*/
 }
@@ -41,8 +59,13 @@ div[contenteditable="true"]:focus:before {
     min-height: 42px;
 }
 
-.todoItem .todoItemInput{
+.todoItem .todoItemInput {
     height: auto;
+}
+
+.list-group-item {
+    -webkit-user-select: none;
+    cursor: pointer;
 }
 
 .todoItem .todoCont {
@@ -53,9 +76,7 @@ div[contenteditable="true"]:focus:before {
 }
 
 .todoItemBtnGroup {
-    /*position: absolute;*/
-    /*bottom: 4px;*/
-    /*right: 5px;*/
+    position: relative;
     display: table-cell;
     vertical-align: middle;
     margin: -8px;
@@ -76,7 +97,6 @@ div[contenteditable="true"]:focus:before {
 }
 
 .filterBox, .tagFilterContainer {
-    /*box-shadow: 0 2px 4px rgba(0,0,0,.175);*/
     box-shadow: none;
 }
 
@@ -88,7 +108,7 @@ div[contenteditable="true"]:focus:before {
 .tagsBox {
     width: 157px;
     overflow: hidden;
-    /*float: left;*/
+    position: absolute;
     margin-top: 2px;
 }
 
@@ -142,7 +162,6 @@ div[contenteditable="true"]:focus:before {
     position: initial;
     width: 100%;
     margin-top: 10px;
-    /*border-top: 0;*/
     border-radius: 4px;
     padding-top: 0;
     border: 1px solid #cccccc;
@@ -190,7 +209,5 @@ div[contenteditable="true"]:focus:before {
 }
 
 #tagFilterInput {
-    /*width: 90%;*/
-    /*border-radius: 4px 4px 0 0;*/
     border: 0;
 }

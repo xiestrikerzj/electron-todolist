@@ -1,7 +1,6 @@
 /**
  * Created by Striker on 2016/9/24.
  */
-window.thunkify = require('thunkify');
 ;(()=> {
 
     // 元素模板 形式是返回元素html的函数
@@ -10,7 +9,7 @@ window.thunkify = require('thunkify');
             if ($.isEmptyObject(data)) {
                 return "";
             }
-            let btnGroup,initTime=new Date(data.initTime);
+            let btnGroup, initTime = new Date(data.initTime);
             switch (data.status) {
                 case Conf.todoStatusMap[0]: // unfinished
                     itemCss += " list-group-item-info";
@@ -33,12 +32,20 @@ window.thunkify = require('thunkify');
             return `<div class="clearfix list-group-item todoItem${itemCss}"
                 data-id='${data.id}' data-cont="${data.cont}" data-tags='${JSON.stringify(data.tags || [])}'
                 data-status="${data.status}" data-btngroup='${JSON.stringify(btnGroup)}'
-                data-time="${JSON.stringify([initTime.getFullYear(),initTime.getMonth(),initTime.getDate()])}">
+                data-time="${JSON.stringify([initTime.getFullYear(), initTime.getMonth() + 1, initTime.getDate()])}">
                 <div class="todoCont fl">
                 ${data.cont}
                 </div>
                 ${btnGroup ? Temp.todoItemBtnGroup(btnGroup) : ''}
                 </div>`
+        },
+
+        todoDateTime({date=[],todoNum=0,isShowYear=true}){
+            if ($.isEmptyObject(date)) return;
+            return `<li class="list-group-item todoDateTime" data-time="${JSON.stringify(date)}">
+                <span class="badge">${todoNum}</span>
+                ${isShowYear ? date[0] + '.' : ''}${date[1]}.${date[2]}
+                </li>`
         },
 
         iconBtn({icon = "ok", style = 'primary', className = '', css = ''}={}){
@@ -78,7 +85,7 @@ window.thunkify = require('thunkify');
             var inputHtml = ``;
             if (btnHtml) {
                 return `<div class="input-group"  style="${css}">
-                <div type="text" contenteditable="true" class="form-control ${className}" placeholder="${placeholder}" data-val="${value}">${value}</div>
+                <textarea type="text" class="form-control ${className}" placeholder="${placeholder}" data-val="${value}">${value}</textarea>
                 <span class="input-group-btn">
                 ${btnHtml}
                 </span>
@@ -139,26 +146,45 @@ window.thunkify = require('thunkify');
             $.map(datas, (data)=> {
                 html = Temp.todoItem(data) + html;
             });
-            prepend ? $container.prepend(html) : $container.html(html);
+            //if (prepend) {
+            //    let $contTodoItems = $container.find(Filter.todoItem);
+            //    $.isEmptyObject($contTodoItems) ? $container.prepend(html) : $contTodoItems.before(html);
+            //} else {
+                $container.html(html);
+            //}
+            Render.todoDateTime();
+        },
+        todoDateTime(){
+            nowDate = [(new Date()).getYear()];
+            $(Filter.todoItem).each(function () {
+                let $this = $(this);
+                thisDate = $this.data('time');
+                if (nowDate.toString() !== thisDate.toString()) {
+                    $this.before(Temp.todoDateTime({
+                        date: thisDate,
+                        todoNum: $(`${Filter.todoItem}[data-time="${JSON.stringify(thisDate)}"]`).length,
+                        isShowYear: (nowDate[0] !== thisDate[0])
+                    }));
+                    nowDate = thisDate;
+                }
+            });
         },
         allTodoDataFromStore(){
-            Db.getAllData({
-                callback: (todolistData)=> {
-                    Common.todolistData = todolistData;
-                    Render.todoItems({datas: Common.todolistData});
-                    Fn.initCommonDom(Filter, Common);
-                }
+            co(function*() {
+                todolistData = yield Db.getAllData({});
+                Common.todolistData = todolistData;
+                Render.todoItems({datas: Common.todolistData});
+                Fn.initCommonDom(Filter, Common);
             });
         },
         updateTodoItem($item, data){
             $item.replaceWith(Temp.todoItem(data));
         },
         tagsBox({tags = [], $container = $('body')}){
-            Db.getDataByIndex({
-                callback: (data)=> {
-                    let allTags = data.tags;
-                    $container.html(Temp.tagsBox({myTags: tags, allTags: allTags}));
-                }
+            co(function*() {
+                let data = yield Db.getDataByIndex({});
+                let allTags = data.tags;
+                $container.html(Temp.tagsBox({myTags: tags, allTags: allTags}));
             });
         },
         tagMenuItem({tags = [], actTags = []}){

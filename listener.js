@@ -3,10 +3,13 @@
  */
 
 ;(()=> {
-    let Temp = require('./render.js').Temp;
-    let Render = require('./render.js').Render;
-    let Db = require('./db.js').Db;
-    let thunkify = require('thunkify');
+    window.co = require('co');
+    window.file = require('./file.js').file;
+    window.Db = require('./db.js').Db;
+
+    setTimeout(function () {
+
+    }, 200);
 
     let fn = {
         startListener(listenerMap){
@@ -33,7 +36,8 @@
                         let newTodoCont = Common.$newTodoInput.val(), status;
 
                         if (newTodoCont !== "") {
-                            let contList = newTodoCont.split(/\n/), dataList = [];
+                            let contList = newTodoCont.split(/\n/).reverse(), // 批量导入时最新的todo项在最上面
+                                dataList = [];
                             $.each(contList, (ind, cont)=> {
 
                                 // 如果内容中包含‘done’字样，则新待办项的默认状态为已完成
@@ -48,15 +52,16 @@
                                     status: status
                                 }));
                             });
-                            Db.addDatas(dataList, (e)=> {
-                                let dataInd = e.target.result;
-                                Db.getDataByPrimaryKey({
-                                    key: dataInd, callback: (data)=> {
-                                        Render.todoItems({datas: data, prepend: true});
-                                        Fn.initCommonDom(null, Common);
-                                        Common.$newTodoInput.val(null);
-                                    }
-                                });
+                            co(function*() {
+                                let ids = yield Db.addDatas({datas: dataList});
+                                let appStatus = yield Db.getDataByIndex({});
+                                Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
+                                //Render.todoItems({datas: datas, prepend: true});
+                                Fn.initCommonDom(null, Common);
+                                Common.$newTodoInput.val(null);
+                                Common.$newTodoInput.trigger('input');
+                            }).catch(e=> {
+                                l(e);
                             });
                         }
                     },
@@ -69,6 +74,11 @@
                         });
                     },
                     [Filter.todoCont](e){
+                    },
+                    [Filter.todoDateTime](e){
+                        let $this = $(this), thisDate = $this.data('time'),
+                            $thisDateTodos = $(`${Filter.todoItem}[data-time="${JSON.stringify(thisDate)}"]`);
+                        $thisDateTodos.toggle();
                     },
                     [Filter.todoItemBtnGroup](e){
                         e.stopPropagation();
@@ -98,7 +108,9 @@
                             css: "margin:-7px 0 -7px -14px;"
                         }));
                         let $thisInput = it.$thisItem.find(Filter.todoItemInput);
-                        $thisInput.focus().html($thisInput.html()); // 把光标移到代编辑内容尾部
+                        $thisInput.focus().get(0).selectionStart = $thisInput.val().length; // 把光标移到代编辑内容尾部
+                        //$thisInput.focus().val($thisInput.val()); // 把光标移到代编辑内容尾部
+                        $(Filter.textarea).trigger('input'); // 触发textarea的input事件，重新设置textarea高度
                     },
                     [Filter.itemModifyDoneBtn](e){
                         let it = fn.getTodoItemWithEvent(e);
@@ -175,31 +187,31 @@
                         let $this = $(this),
                             thisVal = String($this.data('val')),
                             tagsFilter;
-                        Db.getDataByIndex({
-                            callback: data=> {
-                                if (data.tagsFilterWay === 'multi') {
-                                    tagsFilter = data.tagsFilter;
-                                    if (tagsFilter.includes(thisVal) && tagsFilter.length > 1) {
-                                        tagsFilter.splice(tagsFilter.indexOf(thisVal), 1);
-                                    } else if (!tagsFilter.includes(thisVal)) {
-                                        tagsFilter.push(thisVal);
-                                    }
-                                } else {
-                                    tagsFilter = [thisVal];
+                        co(function*() {
+                            let data = yield Db.getDataByIndex({})
+
+                            if (data.tagsFilterWay === 'multi') {
+                                tagsFilter = data.tagsFilter;
+                                if (tagsFilter.includes(thisVal) && tagsFilter.length > 1) {
+                                    tagsFilter.splice(tagsFilter.indexOf(thisVal), 1);
+                                } else if (!tagsFilter.includes(thisVal)) {
+                                    tagsFilter.push(thisVal);
                                 }
-
-                                Common.$tagFilterInput.val(`标签:${tagsFilter.join(',')}`); // 输入框显示为点击的按钮文案
-
-                                // 更新搜索状态和搜索按钮样式
-                                Db.updateDataByIndex({
-                                    valObj: {tagsFilter: tagsFilter}, callback: (appStatus)=> {
-                                        Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
-
-                                        // 渲染标签筛选菜单项
-                                        Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
-                                    }
-                                });
+                            } else {
+                                tagsFilter = [thisVal];
                             }
+
+                            Common.$tagFilterInput.val(`标签:${tagsFilter.join(',')}`); // 输入框显示为点击的按钮文案
+
+                            // 更新搜索状态和搜索按钮样式
+                            Db.updateDataByIndex({
+                                valObj: {tagsFilter: tagsFilter}, callback: (appStatus)=> {
+                                    Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
+
+                                    // 渲染标签筛选菜单项
+                                    Render.tagMenuItem({tags: appStatus.tags, actTags: appStatus.tagsFilter});
+                                }
+                            });
                         });
                     },
                     [Filter.tagFilterWayBtn](e){
@@ -210,7 +222,7 @@
                             Db.updateDataByIndex({
                                 valObj: {tagsFilter: []},
                                 callback: (data)=> {
-                                    Render.tagMenuItem({tags: data.tags, actTags: data.tags})
+                                    Render.tagMenuItem({tags: data.tags, actTags: data.tags});
                                     Db.getTodoDatas({status: data.statusFilter, tags: data.tagsFilter});
                                 }
                             });
@@ -271,35 +283,45 @@
                         }
                     },
                     [Filter.newTagInput](e){
-                        Db.getDataByIndex({
-                            callback: data=> {
-                                var $this = $(this), tagList = data.tags;
-                                switch (e.keyCode) {
-                                    case 13: // enter
-                                        var val = $this.val();
-                                        if (tagList.includes(val)) {
-                                            alert('该标签已存在');
-                                        } else if (val.length === 0) {
-                                            alert('请输入标签名');
-                                        } else if (val.length > 6) {
-                                            alert('标签太长');
-                                        } else {
-                                            tagList.push(String(val));
-                                            //tagList.includes(Conf.noTagTxt) && tagList.splice(tagList.indexOf(Conf.noTagTxt), 1); // 如果待办项没标签，加上标签后去掉“无标签”标签
-                                            var $tag = $(Temp.tag({cont: val, className: 'otherTag'}));
-                                            $this.before($tag);
-                                            $tag.click();
-                                            Db.updateDataByIndex({
-                                                valObj: {tags: tagList}
-                                            });
-                                            Render.tagMenuItem({tags: tagList, actTags: data.tagsFilter});
-                                        }
-                                        break;
-                                }
+                        co(function*() {
+                            let data = yield Db.getDataByIndex({});
+                            var $this = $(this), tagList = data.tags;
+                            switch (e.keyCode) {
+                                case 13: // enter
+                                    var val = $this.val();
+                                    if (tagList.includes(val)) {
+                                        alert('该标签已存在');
+                                    } else if (val.length === 0) {
+                                        alert('请输入标签名');
+                                    } else if (val.length > 6) {
+                                        alert('标签太长');
+                                    } else {
+                                        tagList.push(String(val));
+                                        //tagList.includes(Conf.noTagTxt) && tagList.splice(tagList.indexOf(Conf.noTagTxt), 1); // 如果待办项没标签，加上标签后去掉“无标签”标签
+                                        var $tag = $(Temp.tag({cont: val, className: 'otherTag'}));
+                                        $this.before($tag);
+                                        $tag.click();
+                                        Db.updateDataByIndex({
+                                            valObj: {tags: tagList}
+                                        });
+                                        Render.tagMenuItem({tags: tagList, actTags: data.tagsFilter});
+                                    }
+                                    break;
                             }
                         });
-                    }
+                    },
+
+                    // textarea静止回车换行
+                    [Filter.textarea](e){
+                        if (e.keyCode === 13) {
+                            if (window.event)
+                                window.event.returnValue = false;
+                            else
+                                e.preventDefault();//for firefox
+                        }
+                    },
                 },
+                "keydown": {},
                 "focus": {
                     [Filter.tagFilterInput](e){
                         Common.$tagFilterDropdownBtn.click();
@@ -310,7 +332,7 @@
                     // 当修改代办项的输入框失去焦点时，默认用修改后的内容替换原内容，并隐藏编辑框
                     [Filter.todoItemInput](e){
                         let it = fn.getTodoItemWithEvent(e);
-                        // it.$thisItem.find(Filter.itemModifyDoneBtn).click();
+                        //it.$thisItem.find(Filter.itemModifyDoneBtn).click();
 
                         // 待办项编辑选项失去焦点时，自动给新建待办项输入框加上焦点
                         Common.$newTodoInput.focus();
@@ -326,15 +348,24 @@
                     //
                     //}
                 },
+                "input": {
+                    [Filter.textarea](e){
+                        let $this = $(this);
+                        $this.css('height', '34px').css('height', `${$this.prop('scrollHeight')}px`);
+                    }
+                }
             }
         },
 
-        // 窗口监听事件映射，和上面的事件映射函数一样，因为窗口的事件监听不能用字符串作为筛选器，
+        // 窗口监听事件映射，和上面的事件映射函数一样，因为窗口的事件监听不能用字符串作为筛选器
         // 所以单独做一个映射，被startWinListener注册为 标准的jq事件监听
         winListenerMap() {
             return {
                 "beforeunload"(e){
-                    //alert('您输入的内容尚未保存，确定离开此页面吗？');
+                    File.exportDataToBakFile();
+                },
+                scroll(e){
+
                 }
             }
         },
@@ -347,7 +378,7 @@
                 , $thisItem: $thisItem
                 , itemId: $thisItem.data('id')
                 , itemText: $thisItem.data('cont')
-                , itemInputText: $thisItem.find(Filter.todoItemInput).data('val')
+                , itemInputText: $thisItem.find(Filter.todoItemInput).val()
             }
         },
 
