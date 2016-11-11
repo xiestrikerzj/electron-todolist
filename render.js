@@ -150,7 +150,7 @@
             //    let $contTodoItems = $container.find(Filter.todoItem);
             //    $.isEmptyObject($contTodoItems) ? $container.prepend(html) : $contTodoItems.before(html);
             //} else {
-                $container.html(html);
+            $container.html(html);
             //}
             Render.todoDateTime();
         },
@@ -205,8 +205,15 @@
                     Temp.tagFilterWayBtn({text: '多选', dataVal: 'multi'})}
                     ${Temp.tagFilterWayBtn({text: '全部', dataVal: 'all'})}`;
             $(Filter.tagFilterWayBtnGroup).html(btnHtml);
+        },
+        refreshTodoList({appStatus={}}={}){
+            co(function*() {
+                if ($.isEmptyObject(appStatus)) {
+                    appStatus = yield Db.getDataByIndex({});
+                }
+                Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
+            });
         }
-
     };
 
     window.Temp = Temp;

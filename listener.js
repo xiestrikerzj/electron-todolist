@@ -53,10 +53,8 @@
                                 }));
                             });
                             co(function*() {
-                                let ids = yield Db.addDatas({datas: dataList});
-                                let appStatus = yield Db.getDataByIndex({});
-                                Db.getTodoDatas({status: appStatus.statusFilter, tags: appStatus.tagsFilter});
-                                //Render.todoItems({datas: datas, prepend: true});
+                                yield Db.addDatas({datas: dataList});
+                                Render.refreshTodoList();
                                 Fn.initCommonDom(null, Common);
                                 Common.$newTodoInput.val(null);
                                 Common.$newTodoInput.trigger('input');
@@ -95,8 +93,7 @@
                             event: e, valObj: {
                                 status: "deleted"
                             }, callback: (data)=> {
-                                let $thisTodo = $(`${Filter.todoItem}[data-id="${data.id}"]`);
-                                $thisTodo.remove();
+                                Render.refreshTodoList();
                             }
                         });
                     },
@@ -365,7 +362,20 @@
                     File.exportDataToBakFile();
                 },
                 scroll(e){
-
+                    $(Filter.scrollbarThumbStyle).html(`
+                        ::-webkit-scrollbar-thumb {
+                        background: #7d7d7d;
+                        }`);
+                    clearTimeout(Common.scrollTimer);
+                    Common.scrollTimer = setTimeout(()=> {
+                        $(Filter.scrollbarThumbStyle).html(`
+                        ::-webkit-scrollbar-thumb {
+                        background: white;
+                        }`)
+                    }, 500);
+                },
+                scrollstop(e){
+                    debugger
                 }
             }
         },

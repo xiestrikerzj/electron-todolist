@@ -73,6 +73,8 @@
         , tagFilterDropdownBtn: '.tagFilterContainer #dropdownMenu'
         , tagFilterWayBtnGroup: '#tagFilterBtnGroupContainer .tagFilterBtnGroup'
         , tagMenuContainer: '.tagMenuContainer'
+        , scrollbarThumbStyle: 'style.scrollbar-thumb'
+
     };
 
     window.Conf = {
